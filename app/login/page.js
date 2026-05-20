@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react"; // <-- Sumamos Suspense acá
 
-export default function LoginPage() {
+// Tu componente original intacto, solo le cambiamos el nombre
+function ContenidoLogin() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const aviso = searchParams.get("aviso");
@@ -121,5 +122,14 @@ export default function LoginPage() {
         </p>
       </section>
     </main>
+  );
+}
+
+// El componente principal que Next.js exporta por defecto envuelto en Suspense
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-zinc-50 text-zinc-500">Cargando...</div>}>
+      <ContenidoLogin />
+    </Suspense>
   );
 }
