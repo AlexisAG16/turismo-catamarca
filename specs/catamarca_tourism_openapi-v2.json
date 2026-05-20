@@ -1,0 +1,293 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Catamarca Turismo API",
+    "description": "API Full Stack para la gestión de circuitos, atractivos turísticos y actividades de la Provincia de Catamarca, Argentina. Incluye integración multimedia con videos de YouTube y mapas interactivos de Google Maps para optimizar la planificación de itinerarios.",
+    "version": "1.1.0",
+    "contact": {
+      "name": "Alexis"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Servidor de Desarrollo Local"
+    }
+  ],
+  "paths": {
+    "/circuitos": {
+      "get": {
+        "summary": "Obtener todos los circuitos turísticos",
+        "description": "Retorna la lista de regiones/circuitos geográficos de Catamarca (ej: Puna, Ruta del Adobe).",
+        "responses": {
+          "200": {
+            "description": "Lista de circuitos obtenida con éxito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Circuito"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear un nuevo circuito (Solo Admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CircuitoInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Circuito creado correctamente."
+          }
+        }
+      }
+    },
+    "/atractivos": {
+      "get": {
+        "summary": "Obtener todos los atractivos turísticos",
+        "description": "Retorna los puntos de interés multimedia de la provincia, vinculados a sus respectivos circuitos.",
+        "responses": {
+          "200": {
+            "description": "Lista de atractivos obtenida con éxito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Atractivo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear un nuevo atractivo (Solo Admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtractivoInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Atractivo creado correctamente."
+          }
+        }
+      }
+    },
+    "/actividades": {
+      "get": {
+        "summary": "Obtener todas las actividades",
+        "description": "Retorna las excursiones, trekkings y servicios vinculados a los atractivos.",
+        "responses": {
+          "200": {
+            "description": "Lista de actividades obtenida con éxito."
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear una nueva actividad (Solo Admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActividadInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Actividad creada correctamente."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Circuito": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "65fc1234567890abcdef0001"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Ruta del Adobe"
+          },
+          "descripcion": {
+            "type": "string",
+            "example": "Circuito histórico y arquitectónico que recorre templos y capillas construidos en adobe en el siglo XVIII."
+          },
+          "temporadaIdeal": {
+            "type": "string",
+            "example": "Todo el año (Preferentemente Otoño/Invierno)"
+          }
+        }
+      },
+      "CircuitoInput": {
+        "type": "object",
+        "required": [
+          "nombre",
+          "descripcion",
+          "temporadaIdeal"
+        ],
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "temporadaIdeal": {
+            "type": "string"
+          }
+        }
+      },
+      "Atractivo": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "65fc1234567890abcdef0002"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Termas de Fiambalá"
+          },
+          "departamento": {
+            "type": "string",
+            "example": "Tinogasta"
+          },
+          "descripcion": {
+            "type": "string",
+            "example": "Aguas termales curativas ubicadas en una imponente quebrada entre los cerros."
+          },
+          "imagen": {
+            "type": "object",
+            "properties": {
+              "public_id": {
+                "type": "string",
+                "example": "turismo/fiambala_01"
+              },
+              "url": {
+                "type": "string",
+                "example": "https://res.cloudinary.com/demo/image/upload/v1/turismo/fiambala_01.jpg"
+              }
+            }
+          },
+          "circuito": {
+            "type": "string",
+            "description": "ID del Circuito relacionado (Populate)"
+          },
+          "youtubeUrl": {
+            "type": "string",
+            "example": "https://www.youtube.com/watch?v=zJg42mYtS_c"
+          },
+          "googleMapsUrl": {
+            "type": "string",
+            "example": "https://maps.google.com/?q=Termas+de+Fiambala+Catamarca"
+          }
+        }
+      },
+      "AtractivoInput": {
+        "type": "object",
+        "required": [
+          "nombre",
+          "departamento",
+          "descripcion",
+          "circuito"
+        ],
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "departamento": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "circuito": {
+            "type": "string",
+            "description": "ID del documento Circuito"
+          },
+          "youtubeUrl": {
+            "type": "string"
+          },
+          "googleMapsUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "Actividad": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "65fc1234567890abcdef0003"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Trekking al Balcón de Pissis"
+          },
+          "duracionEstimada": {
+            "type": "string",
+            "example": "6 horas"
+          },
+          "costoAproximado": {
+            "type": "number",
+            "example": 45000
+          },
+          "atractivo": {
+            "type": "string",
+            "description": "ID del Atractivo relacionado (Populate)"
+          }
+        }
+      },
+      "ActividadInput": {
+        "type": "object",
+        "required": [
+          "nombre",
+          "duracionEstimada",
+          "atractivo"
+        ],
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "duracionEstimada": {
+            "type": "string"
+          },
+          "costoAproximado": {
+            "type": "number"
+          },
+          "atractivo": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
