@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
+import LoadingState from "@/components/LoadingState";
 
 const ITINERARIO_KEY = "itinerario";
 
@@ -30,6 +31,34 @@ function obtenerYouTubeEmbedUrl(url) {
   }
 }
 
+function obtenerGoogleMapsEmbedUrl(url, nombre, departamento) {
+  if (!url || typeof url !== "string") return "";
+
+  try {
+    const parsedUrl = new URL(url);
+
+    if (parsedUrl.pathname.includes("/maps/embed")) {
+      return url;
+    }
+
+    const coordenadasArroba = parsedUrl.href.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    const coordenadasPlace = parsedUrl.href.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+    const coordenadas = coordenadasArroba || coordenadasPlace;
+
+    if (coordenadas) {
+      return `https://maps.google.com/maps?q=${coordenadas[1]},${coordenadas[2]}&z=14&output=embed`;
+    }
+  } catch {
+    return "";
+  }
+
+  const busqueda = encodeURIComponent(
+    `${nombre || "Atractivo turistico"} ${departamento || ""} Catamarca`
+  );
+
+  return `https://maps.google.com/maps?q=${busqueda}&z=14&output=embed`;
+}
+
 export default function DetalleAtractivoPage() {
   const { id } = useParams();
   const [atractivo, setAtractivo] = useState(null);
@@ -41,6 +70,15 @@ export default function DetalleAtractivoPage() {
   const youtubeEmbedUrl = useMemo(
     () => obtenerYouTubeEmbedUrl(atractivo?.youtubeUrl),
     [atractivo?.youtubeUrl]
+  );
+  const googleMapsEmbedUrl = useMemo(
+    () =>
+      obtenerGoogleMapsEmbedUrl(
+        atractivo?.googleMapsUrl,
+        atractivo?.nombre,
+        atractivo?.departamento
+      ),
+    [atractivo?.googleMapsUrl, atractivo?.nombre, atractivo?.departamento]
   );
 
   useEffect(() => {
@@ -127,7 +165,10 @@ export default function DetalleAtractivoPage() {
       <div className="min-h-screen bg-zinc-50 text-zinc-950">
         <Navbar />
         <main className="mx-auto w-full max-w-7xl px-5 py-10">
-          <div className="h-[420px] animate-pulse rounded-xl bg-white shadow-sm" />
+          <LoadingState
+            titulo="Cargando detalle del atractivo"
+            mensaje="Estamos preparando la informacion completa, multimedia y actividades asociadas."
+          />
         </main>
       </div>
     );
@@ -200,15 +241,35 @@ export default function DetalleAtractivoPage() {
             </div>
 
             <div className="space-y-4">
-              {atractivo.googleMapsUrl && (
-                <a
-                  href={atractivo.googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-800 transition hover:border-emerald-300 hover:bg-emerald-50"
-                >
-                  Abrir ubicacion en Google Maps
-                </a>
+              {atractivo.googleMapsUrl && googleMapsEmbedUrl && (
+                <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 shadow-sm">
+                  <div className="border-b border-zinc-200 bg-white px-4 py-3">
+                    <h2 className="text-base font-semibold text-zinc-950">
+                      Ubicacion
+                    </h2>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Mapa interactivo del atractivo.
+                    </p>
+                  </div>
+                  <iframe
+                    src={googleMapsEmbedUrl}
+                    title={`Ubicacion de ${atractivo.nombre}`}
+                    className="aspect-video w-full"
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                  <div className="bg-white px-4 py-3">
+                    <a
+                      href={atractivo.googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-semibold text-emerald-700 transition hover:text-emerald-800"
+                    >
+                      Abrir en Google Maps
+                    </a>
+                  </div>
+                </div>
               )}
 
               {youtubeEmbedUrl && (

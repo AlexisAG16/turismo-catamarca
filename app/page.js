@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
+import LoadingState from "@/components/LoadingState";
 
 export default function HomePage() {
   const [circuitos, setCircuitos] = useState([]);
@@ -42,7 +43,7 @@ export default function HomePage() {
       <main>
         <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
           <Image
-            src="/images/banner-catamarca.jpg"
+            src="/images/catamarcacity.webp"
             alt="Paisaje de Catamarca"
             fill
             priority
@@ -87,11 +88,10 @@ export default function HomePage() {
           </div>
 
           {cargando ? (
-            <div className="grid gap-5 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="h-56 animate-pulse rounded-xl bg-white shadow-sm" />
-              ))}
-            </div>
+            <LoadingState
+              titulo="Cargando circuitos destacados"
+              mensaje="Estamos consultando la informacion turistica disponible."
+            />
           ) : circuitos.length === 0 ? (
             <div className="rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
               Todavía no hay circuitos cargados.

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Toast from "@/components/Toast";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function RegisterPage() {
   });
   const [errores, setErrores] = useState({});
   const [mensaje, setMensaje] = useState("");
+  const [toast, setToast] = useState({ mensaje: "", tipo: "success" });
   const [cargando, setCargando] = useState(false);
 
   function manejarCambio(event) {
@@ -25,6 +27,7 @@ export default function RegisterPage() {
     setCargando(true);
     setErrores({});
     setMensaje("");
+    setToast({ mensaje: "Creando cuenta y conectando con la base de datos...", tipo: "loading" });
 
     try {
       const respuesta = await fetch("/api/auth/register", {
@@ -32,18 +35,20 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formulario),
       });
-
       const data = await respuesta.json();
 
       if (!respuesta.ok) {
         setErrores(data.errores || {});
         setMensaje(data.mensaje || "No se pudo completar el registro.");
+        setToast({ mensaje: data.mensaje || "No se pudo completar el registro.", tipo: "error" });
         return;
       }
 
+      setToast({ mensaje: "Cuenta creada correctamente.", tipo: "success" });
       router.push("/login");
     } catch {
       setMensaje("No se pudo conectar con el servidor.");
+      setToast({ mensaje: "No se pudo conectar con el servidor.", tipo: "error" });
     } finally {
       setCargando(false);
     }
@@ -51,6 +56,7 @@ export default function RegisterPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 py-12 text-zinc-950">
+      <Toast mensaje={toast.mensaje} tipo={toast.tipo} onClose={() => setToast({ mensaje: "", tipo: "success" })} />
       <section className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-8 shadow-sm">
         <div className="mb-8">
           <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">
@@ -60,52 +66,26 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={manejarEnvio} className="space-y-5">
-          <div>
-            <label htmlFor="nombre" className="block text-sm font-medium text-zinc-800">
-              Nombre
-            </label>
-            <input
-              id="nombre"
-              name="nombre"
-              type="text"
-              value={formulario.nombre}
-              onChange={manejarCambio}
-              className="mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15"
-            />
-            {errores.nombre && <p className="mt-2 text-sm text-red-600">{errores.nombre}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="correo" className="block text-sm font-medium text-zinc-800">
-              Correo
-            </label>
-            <input
-              id="correo"
-              name="correo"
-              type="email"
-              value={formulario.correo}
-              onChange={manejarCambio}
-              className="mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15"
-            />
-            {errores.correo && <p className="mt-2 text-sm text-red-600">{errores.correo}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="contrasena" className="block text-sm font-medium text-zinc-800">
-              Contraseña
-            </label>
-            <input
-              id="contrasena"
-              name="contrasena"
-              type="password"
-              value={formulario.contrasena}
-              onChange={manejarCambio}
-              className="mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15"
-            />
-            {errores.contrasena && (
-              <p className="mt-2 text-sm text-red-600">{errores.contrasena}</p>
-            )}
-          </div>
+          {[
+            ["nombre", "Nombre", "text"],
+            ["correo", "Correo", "email"],
+            ["contrasena", "Contrasena", "password"],
+          ].map(([name, label, type]) => (
+            <div key={name}>
+              <label htmlFor={name} className="block text-sm font-medium text-zinc-800">
+                {label}
+              </label>
+              <input
+                id={name}
+                name={name}
+                type={type}
+                value={formulario[name]}
+                onChange={manejarCambio}
+                className="mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15"
+              />
+              {errores[name] && <p className="mt-2 text-sm text-red-600">{errores[name]}</p>}
+            </div>
+          ))}
 
           {mensaje && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{mensaje}</p>}
 
@@ -119,9 +99,9 @@ export default function RegisterPage() {
         </form>
 
         <p className="mt-6 text-center text-sm text-zinc-600">
-          ¿Ya tienes cuenta?{" "}
+          Ya tienes cuenta?{" "}
           <Link href="/login" className="font-medium text-emerald-700 hover:text-emerald-800">
-            Inicia sesión
+            Inicia sesion
           </Link>
         </p>
       </section>

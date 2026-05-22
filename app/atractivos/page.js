@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import CardAtractivo from "@/components/CardAtractivo";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
+import LoadingState from "@/components/LoadingState";
 
 const departamentos = [
   "Tinogasta",
@@ -145,6 +146,7 @@ export default function AtractivosPage() {
 
     if (!confirmacion.isConfirmed) return;
 
+    setToast({ mensaje: "Eliminando atractivo en la base de datos...", tipo: "loading" });
     const response = await fetch(`/api/atractivos/${id}`, { method: "DELETE" });
     const data = await response.json();
     if (!response.ok) {
@@ -155,7 +157,7 @@ export default function AtractivosPage() {
     setAtractivos((valores) =>
       valores.filter((atractivo) => atractivo._id !== id)
     );
-    setToast({ mensaje: "Atractivo borrado con exito.", tipo: "success" });
+    setToast({ mensaje: "Atractivo eliminado correctamente.", tipo: "success" });
     await Swal.fire({
       toast: true,
       position: "top-end",
@@ -171,6 +173,7 @@ export default function AtractivosPage() {
 
   async function guardarAtractivo(event) {
     event.preventDefault();
+    setToast({ mensaje: "Actualizando atractivo en la base de datos...", tipo: "loading" });
 
     const payload = {
       ...atractivoEditando,
@@ -198,7 +201,7 @@ export default function AtractivosPage() {
       )
     );
     setAtractivoEditando(null);
-    setToast({ mensaje: "Atractivo actualizado con exito.", tipo: "success" });
+    setToast({ mensaje: "Atractivo actualizado correctamente.", tipo: "success" });
     router.push("/atractivos");
     router.refresh();
   }
@@ -286,14 +289,10 @@ export default function AtractivosPage() {
           )}
 
           {cargando && (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-96 animate-pulse rounded-lg border border-zinc-200 bg-white"
-                />
-              ))}
-            </div>
+            <LoadingState
+              titulo="Cargando atractivos"
+              mensaje="Estamos buscando paisajes, lugares y experiencias para mostrar."
+            />
           )}
 
           {!cargando && error && (

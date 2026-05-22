@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
+import LoadingState from "@/components/LoadingState";
 
 function formatearCosto(costo) {
   if (costo === undefined || costo === null || costo === "") {
@@ -105,6 +106,7 @@ export default function ActividadesPage() {
 
     if (!confirmacion.isConfirmed) return;
 
+    setToast({ mensaje: "Eliminando actividad en la base de datos...", tipo: "loading" });
     const response = await fetch(`/api/actividades/${id}`, { method: "DELETE" });
     const data = await response.json();
     if (!response.ok) {
@@ -112,7 +114,7 @@ export default function ActividadesPage() {
       return;
     }
     setActividades((valores) => valores.filter((actividad) => actividad._id !== id));
-    setToast({ mensaje: "Actividad borrada con exito.", tipo: "success" });
+    setToast({ mensaje: "Actividad eliminada correctamente.", tipo: "success" });
     await Swal.fire({
       toast: true,
       position: "top-end",
@@ -128,6 +130,7 @@ export default function ActividadesPage() {
 
   async function guardarActividad(event) {
     event.preventDefault();
+    setToast({ mensaje: "Actualizando actividad en la base de datos...", tipo: "loading" });
     const response = await fetch(`/api/actividades/${actividadEditando._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -142,7 +145,7 @@ export default function ActividadesPage() {
       valores.map((actividad) => (actividad._id === data.actividad._id ? data.actividad : actividad))
     );
     setActividadEditando(null);
-    setToast({ mensaje: "Actividad actualizada con exito.", tipo: "success" });
+    setToast({ mensaje: "Actividad actualizada correctamente.", tipo: "success" });
     router.push("/actividades");
     router.refresh();
   }
@@ -182,14 +185,10 @@ export default function ActividadesPage() {
 
         <section className="mt-8">
           {cargando && (
-            <div className="grid gap-4 md:grid-cols-2">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-44 animate-pulse rounded-lg border border-zinc-200 bg-white"
-                />
-              ))}
-            </div>
+            <LoadingState
+              titulo="Cargando actividades"
+              mensaje="Estamos consultando las excursiones y experiencias disponibles."
+            />
           )}
 
           {!cargando && error && (

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verificarAdmin } from "@/lib/authMiddleware";
+import { verificarAdmin, verificarToken } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Circuito from "@/models/Circuito";
 import mongoose from "mongoose";
@@ -8,6 +8,19 @@ export const runtime = "nodejs";
 
 function validarAdmin(request) {
   const auth = verificarAdmin(request);
+
+  if (!auth.autorizado) {
+    return {
+      autorizado: false,
+      respuesta: NextResponse.json({ error: "No autorizado" }, { status: 401 }),
+    };
+  }
+
+  return { autorizado: true };
+}
+
+function validarSesion(request) {
+  const auth = verificarToken(request);
 
   if (!auth.autorizado) {
     return {
@@ -42,12 +55,12 @@ export async function GET() {
   }
 }
 
-// Crea un circuito nuevo solo si la sesion pertenece a un administrador.
+// Crea un circuito nuevo si la sesion pertenece a un usuario autenticado.
 export async function POST(request) {
-  const admin = validarAdmin(request);
+  const sesion = validarSesion(request);
 
-  if (!admin.autorizado) {
-    return admin.respuesta;
+  if (!sesion.autorizado) {
+    return sesion.respuesta;
   }
 
   const body = await request.json().catch(() => null);

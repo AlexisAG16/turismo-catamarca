@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
+import LoadingState from "@/components/LoadingState";
 
 const estadoInicial = {
   nombre: "",
@@ -102,6 +103,7 @@ export default function CargarActividadPage() {
     }
 
     setCargando(true);
+    setToast({ mensaje: "Conectando con la base de datos...", tipo: "loading" });
 
     try {
       const payload = {
@@ -123,7 +125,7 @@ export default function CargarActividadPage() {
         throw new Error(data.error || data.mensaje || "No se pudo cargar la actividad.");
       }
 
-      setToast({ mensaje: "Actividad cargada con exito.", tipo: "success" });
+      setToast({ mensaje: "Actividad guardada correctamente en la base de datos.", tipo: "success" });
       setFormulario(estadoInicial);
       setIntentoEnviar(false);
       window.setTimeout(() => {
@@ -132,7 +134,7 @@ export default function CargarActividadPage() {
       }, 600);
     } catch (error) {
       setToast({
-        mensaje: error.message || "No se pudo cargar la actividad.",
+        mensaje: error.message || "No se pudo conectar con la base de datos.",
         tipo: "error",
       });
     } finally {
@@ -145,7 +147,11 @@ export default function CargarActividadPage() {
       <div className="min-h-screen bg-zinc-50 text-zinc-950">
         <Navbar />
         <main className="mx-auto mt-10 max-w-md rounded-lg bg-white p-6 shadow-md">
-          <p className="text-sm text-zinc-600">Verificando permisos...</p>
+          <LoadingState
+            titulo="Verificando permisos"
+            mensaje="Estamos cargando los atractivos y preparando el formulario."
+            compacto
+          />
         </main>
       </div>
     );

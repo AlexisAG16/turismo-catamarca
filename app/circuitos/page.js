@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
+import LoadingState from "@/components/LoadingState";
 
 export default function CircuitosPage() {
   const router = useRouter();
@@ -13,23 +14,26 @@ export default function CircuitosPage() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [esAdmin, setEsAdmin] = useState(false);
+  const [estaLogueado, setEstaLogueado] = useState(false);
   const [circuitoEditando, setCircuitoEditando] = useState(null);
   const [toast, setToast] = useState({ mensaje: "", tipo: "success" });
 
   useEffect(() => {
     let activo = true;
 
-    // Consulta la sesion actual para mostrar acciones de gestion solo a administradores.
-    async function verificarAdmin() {
+    // Consulta la sesion actual para mostrar creacion a usuarios logueados y gestion a administradores.
+    async function verificarSesion() {
       try {
         const response = await fetch("/api/auth/session", { cache: "no-store" });
         const data = await response.json();
 
         if (activo) {
+          setEstaLogueado(response.ok);
           setEsAdmin(response.ok && data.usuario?.rol === "admin");
         }
       } catch {
         if (activo) {
+          setEstaLogueado(false);
           setEsAdmin(false);
         }
       }
@@ -62,7 +66,7 @@ export default function CircuitosPage() {
       }
     }
 
-    verificarAdmin();
+    verificarSesion();
     cargarCircuitos();
 
     return () => {
@@ -85,6 +89,7 @@ export default function CircuitosPage() {
 
     if (!confirmacion.isConfirmed) return;
 
+    setToast({ mensaje: "Eliminando circuito en la base de datos...", tipo: "loading" });
     const response = await fetch(`/api/circuitos/${id}`, { method: "DELETE" });
     const data = await response.json();
     if (!response.ok) {
@@ -92,7 +97,7 @@ export default function CircuitosPage() {
       return;
     }
     setCircuitos((valores) => valores.filter((circuito) => circuito._id !== id));
-    setToast({ mensaje: "Circuito borrado con exito.", tipo: "success" });
+    setToast({ mensaje: "Circuito eliminado correctamente.", tipo: "success" });
     await Swal.fire({
       toast: true,
       position: "top-end",
@@ -108,6 +113,7 @@ export default function CircuitosPage() {
 
   async function guardarCircuito(event) {
     event.preventDefault();
+    setToast({ mensaje: "Actualizando circuito en la base de datos...", tipo: "loading" });
     const response = await fetch(`/api/circuitos/${circuitoEditando._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -122,7 +128,7 @@ export default function CircuitosPage() {
       valores.map((circuito) => (circuito._id === data.circuito._id ? data.circuito : circuito))
     );
     setCircuitoEditando(null);
-    setToast({ mensaje: "Circuito actualizado con exito.", tipo: "success" });
+    setToast({ mensaje: "Circuito actualizado correctamente.", tipo: "success" });
     router.push("/circuitos");
     router.refresh();
   }
@@ -143,7 +149,7 @@ export default function CircuitosPage() {
           <p className="mt-4 text-base leading-7 text-zinc-600">
             Recorre regiones como la Ruta del Adobe, la Puna y los Valles con informacion organizada para planificar tu viaje.
           </p>
-          {esAdmin && (
+          {estaLogueado && (
             <Link
               href="/admin/cargar-circuito"
               className="mb-6 mt-6 inline-block rounded-md bg-emerald-600 px-4 py-2 font-medium text-white transition-all hover:bg-emerald-700"
@@ -151,18 +157,39 @@ export default function CircuitosPage() {
               ➕ Crear Nuevo Circuito
             </Link>
           )}
+          {!estaLogueado && (
+            <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+              <p className="font-medium">
+                Solo los usuarios registrados pueden crear circuitos.
+              </p>
+              <p className="mt-1 text-emerald-800">
+                Podes explorar la informacion libremente. Para proponer un circuito,
+                inicia sesion o crea una cuenta.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href="/login"
+                  className="rounded-md bg-emerald-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-800"
+                >
+                  Iniciar Sesion
+                </Link>
+                <Link
+                  href="/register"
+                  className="rounded-md border border-emerald-700 px-3 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100"
+                >
+                  Registrarse
+                </Link>
+              </div>
+            </div>
+          )}
         </header>
 
         <section className="mt-8">
           {cargando && (
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-64 animate-pulse rounded-lg border border-zinc-200 bg-white"
-                />
-              ))}
-            </div>
+            <LoadingState
+              titulo="Cargando circuitos"
+              mensaje="Estamos recuperando los circuitos regionales de Catamarca."
+            />
           )}
 
           {!cargando && error && (

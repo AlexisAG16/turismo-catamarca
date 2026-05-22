@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import CardAtractivo from "@/components/CardAtractivo";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
+import LoadingState from "@/components/LoadingState";
 
 export default function ItinerarioPage() {
   const router = useRouter();
@@ -82,14 +83,10 @@ export default function ItinerarioPage() {
 
         <section className="mt-8">
           {cargando && (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-96 animate-pulse rounded-lg border border-zinc-200 bg-white"
-                />
-              ))}
-            </div>
+            <LoadingState
+              titulo="Cargando tu itinerario"
+              mensaje="Estamos recuperando los atractivos que guardaste para tu viaje."
+            />
           )}
 
           {!cargando && error && (

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const rutasPrivadas = ["/admin", "/itinerario"];
 
-export function middleware(request) {
+export function proxy(request) {
   const { pathname } = request.nextUrl;
   const esRutaPrivada = rutasPrivadas.some(
     (ruta) => pathname === ruta || pathname.startsWith(`${ruta}/`)

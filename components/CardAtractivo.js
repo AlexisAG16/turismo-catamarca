@@ -224,6 +224,15 @@ export default function CardAtractivo({
             </button>
           )}
 
+          {!usuario && (
+            <Link
+              href="/login?aviso=itinerario"
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-md border border-emerald-700 px-4 py-2 text-center text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
+            >
+              Inicia sesion para guardar
+            </Link>
+          )}
+
           <div className="grid flex-1 grid-cols-2 gap-2 sm:w-auto">
             <button
               type="button"

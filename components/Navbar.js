@@ -3,21 +3,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { emitirToast } from "@/components/toastBus";
 
 const ITINERARIO_KEY = "itinerario";
 
 const linksPublicos = [
   { href: "/", label: "Inicio" },
-  { href: "/circuitos", label: "Explorar Circuitos" },
+  { href: "/circuitos", label: "Circuitos" },
+  { href: "/atractivos", label: "Atractivos" },
+  { href: "/actividades", label: "Actividades" },
   { href: "/nosotros", label: "Nosotros" },
   { href: "/contacto", label: "Contacto" },
   { href: "/soporte", label: "Soporte" },
-];
-
-const linksAdmin = [
-  { href: "/circuitos", label: "Cargar Circuito" },
-  { href: "/atractivos", label: "Cargar Atractivo" },
-  { href: "/actividades", label: "Cargar Actividad" },
 ];
 
 function leerCookie(nombre) {
@@ -33,7 +30,6 @@ function leerCookie(nombre) {
 export default function Navbar() {
   const router = useRouter();
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
-  const [adminAbierto, setAdminAbierto] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [usuario, setUsuario] = useState(null);
   const [itinerario, setItinerario] = useState([]);
@@ -51,7 +47,6 @@ export default function Navbar() {
         setIsLoggedIn(false);
         setUsuario(null);
         setItinerario([]);
-        setAdminAbierto(false);
         setModalItinerarioAbierto(false);
         localStorage.removeItem("usuario");
         localStorage.removeItem(ITINERARIO_KEY);
@@ -98,7 +93,6 @@ export default function Navbar() {
         setIsLoggedIn(false);
         setUsuario(null);
         setItinerario([]);
-        setAdminAbierto(false);
         setModalItinerarioAbierto(false);
         localStorage.removeItem("usuario");
         localStorage.removeItem(ITINERARIO_KEY);
@@ -119,7 +113,6 @@ export default function Navbar() {
 
   function cerrarMenus() {
     setMenuMovilAbierto(false);
-    setAdminAbierto(false);
     setModalItinerarioAbierto(false);
   }
 
@@ -131,12 +124,12 @@ export default function Navbar() {
     setIsLoggedIn(false);
     setUsuario(null);
     cerrarMenus();
+    emitirToast("Sesion cerrada correctamente.", "success");
     router.push("/");
     router.refresh();
   }
 
   function alternarItinerario() {
-    setAdminAbierto(false);
     setModalItinerarioAbierto((abierto) => !abierto);
   }
 
@@ -170,40 +163,6 @@ export default function Navbar() {
 
         <div className="hidden min-w-0 flex-1 items-center gap-1 lg:flex">
           {linksPublicos.map((link) => renderLink(link))}
-
-          {isAdmin && (
-            <div className="relative ml-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setModalItinerarioAbierto(false);
-                  setAdminAbierto((abierto) => !abierto);
-                }}
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100"
-                aria-expanded={adminAbierto}
-              >
-                Gestion Admin
-                <span aria-hidden="true" className="text-xs">
-                  v
-                </span>
-              </button>
-
-              {adminAbierto && (
-                <div className="absolute left-0 top-full z-50 mt-2 w-56 rounded-lg border border-zinc-200 bg-white p-2 shadow-xl">
-                  {linksAdmin.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={cerrarMenus}
-                      className="block rounded-md px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-emerald-50 hover:text-emerald-800"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex">
@@ -267,7 +226,6 @@ export default function Navbar() {
         <button
           type="button"
           onClick={() => {
-            setAdminAbierto(false);
             setModalItinerarioAbierto(false);
             setMenuMovilAbierto((abierto) => !abierto);
           }}
@@ -284,17 +242,6 @@ export default function Navbar() {
           <div className="absolute left-0 top-full z-50 w-full bg-slate-900 px-4 py-4 shadow-xl lg:hidden">
             <div className="flex flex-col gap-1">
               {linksPublicos.map((link) => renderLink(link, true))}
-
-              {isAdmin && (
-                <div className="mt-3 border-t border-slate-700 pt-3">
-                  <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-emerald-300">
-                    Gestion Admin
-                  </p>
-                  <div className="flex flex-col gap-1">
-                    {linksAdmin.map((link) => renderLink(link, true))}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="mt-4 border-t border-slate-700 pt-4">
