@@ -1,64 +1,46 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import CardAtractivo from "@/components/CardAtractivo";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
 import LoadingState from "@/components/LoadingState";
+import { departamentosCatamarca } from "@/lib/departamentos";
 
-const departamentos = [
-  "Tinogasta",
-  "Belen",
-  "Antofagasta de la Sierra",
-  "Andalgala",
-  "Poman",
-  "Santa Maria",
-  "Capital",
-  "Ambato",
-  "Ancasti",
-  "Capayan",
-  "El Alto",
-  "Fray Mamerto Esquiu",
-  "La Paz",
-  "Paclin",
-  "Santa Rosa",
-  "Valle Viejo",
-];
+const LIMITE_ATRACTIVOS = 6;
 
-export default function AtractivosPage() {
+function AtractivosContenido() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const paginaInicial = Math.max(1, Number(searchParams.get("page")) || 1);
   const [atractivos, setAtractivos] = useState([]);
+  const [paginaActual, setPaginaActual] = useState(paginaInicial);
+  const [paginacion, setPaginacion] = useState({
+    pagina: 1,
+    limite: LIMITE_ATRACTIVOS,
+    totalRegistros: 0,
+    totalPaginas: 1,
+    tieneAnterior: false,
+    tieneSiguiente: false,
+  });
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [esAdmin, setEsAdmin] = useState(false);
   const [circuitos, setCircuitos] = useState([]);
   const [atractivoEditando, setAtractivoEditando] = useState(null);
-  const [busquedaNombre, setBusquedaNombre] = useState("");
-  const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState("");
-  const [circuitoSeleccionado, setCircuitoSeleccionado] = useState("");
+  const [busquedaNombre, setBusquedaNombre] = useState(
+    searchParams.get("nombre") || ""
+  );
+  const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState(
+    searchParams.get("departamento") || ""
+  );
+  const [circuitoSeleccionado, setCircuitoSeleccionado] = useState(
+    searchParams.get("circuito") || ""
+  );
   const [toast, setToast] = useState({ mensaje: "", tipo: "success" });
-
-  // Aplica filtros combinados por nombre, departamento y circuito sin pedir datos nuevos al servidor.
-  const atractivosFiltrados = useMemo(() => {
-    const busqueda = busquedaNombre.trim().toLowerCase();
-
-    return atractivos.filter((atractivo) => {
-      const nombreCoincide = (atractivo.nombre || "")
-        .toLowerCase()
-        .includes(busqueda);
-      const departamentoCoincide =
-        !departamentoSeleccionado ||
-        atractivo.departamento === departamentoSeleccionado;
-      const circuitoId = atractivo.circuito?._id || atractivo.circuito || "";
-      const circuitoCoincide =
-        !circuitoSeleccionado || circuitoId === circuitoSeleccionado;
-
-      return nombreCoincide && departamentoCoincide && circuitoCoincide;
-    });
-  }, [atractivos, busquedaNombre, departamentoSeleccionado, circuitoSeleccionado]);
 
   useEffect(() => {
     let activo = true;
@@ -95,13 +77,43 @@ export default function AtractivosPage() {
       }
     }
 
-    // Obtiene los atractivos publicados con manejo de errores para evitar cargas infinitas.
+    verificarAdmin();
+    cargarCircuitos();
+
+    return () => {
+      activo = false;
+    };
+  }, [router]);
+
+  useEffect(() => {
+    let activo = true;
+
+    // Obtiene los atractivos paginados desde el backend con los filtros activos.
     async function cargarAtractivos() {
       try {
         setCargando(true);
         setError("");
 
-        const response = await fetch("/api/atractivos", { cache: "no-store" });
+        const params = new URLSearchParams({
+          page: String(paginaActual),
+          limit: String(LIMITE_ATRACTIVOS),
+        });
+
+        if (busquedaNombre.trim()) {
+          params.set("nombre", busquedaNombre.trim());
+        }
+
+        if (departamentoSeleccionado) {
+          params.set("departamento", departamentoSeleccionado);
+        }
+
+        if (circuitoSeleccionado) {
+          params.set("circuito", circuitoSeleccionado);
+        }
+
+        const response = await fetch(`/api/atractivos?${params.toString()}`, {
+          cache: "no-store",
+        });
         const data = await response.json();
 
         if (!response.ok) {
@@ -110,6 +122,16 @@ export default function AtractivosPage() {
 
         if (activo) {
           setAtractivos(Array.isArray(data.atractivos) ? data.atractivos : []);
+          setPaginacion(
+            data.paginacion || {
+              pagina: 1,
+              limite: LIMITE_ATRACTIVOS,
+              totalRegistros: 0,
+              totalPaginas: 1,
+              tieneAnterior: false,
+              tieneSiguiente: false,
+            }
+          );
         }
       } catch (err) {
         if (activo) {
@@ -122,14 +144,12 @@ export default function AtractivosPage() {
       }
     }
 
-    verificarAdmin();
-    cargarCircuitos();
     cargarAtractivos();
 
     return () => {
       activo = false;
     };
-  }, []);
+  }, [paginaActual, busquedaNombre, departamentoSeleccionado, circuitoSeleccionado]);
 
   // Confirma y ejecuta el borrado seguro de un atractivo desde la API protegida.
   async function borrarAtractivo(id) {
@@ -157,6 +177,9 @@ export default function AtractivosPage() {
     setAtractivos((valores) =>
       valores.filter((atractivo) => atractivo._id !== id)
     );
+    if (atractivos.length === 1 && paginaActual > 1) {
+      setPaginaActual((valor) => valor - 1);
+    }
     setToast({ mensaje: "Atractivo eliminado correctamente.", tipo: "success" });
     await Swal.fire({
       toast: true,
@@ -214,6 +237,39 @@ export default function AtractivosPage() {
     });
   }
 
+  function irAPagina(pagina) {
+    const paginaDestino = Math.min(Math.max(1, pagina), paginacion.totalPaginas);
+    setPaginaActual(paginaDestino);
+    const params = construirParametrosListado(paginaDestino);
+    router.replace(`/atractivos?${params.toString()}`, { scroll: false });
+  }
+
+  function construirParametrosListado(pagina = paginaActual) {
+    const params = new URLSearchParams({
+      page: String(pagina),
+      limit: String(LIMITE_ATRACTIVOS),
+    });
+
+    if (busquedaNombre.trim()) {
+      params.set("nombre", busquedaNombre.trim());
+    }
+
+    if (departamentoSeleccionado) {
+      params.set("departamento", departamentoSeleccionado);
+    }
+
+    if (circuitoSeleccionado) {
+      params.set("circuito", circuitoSeleccionado);
+    }
+
+    return params;
+  }
+
+  function construirHrefDetalle(id) {
+    const volver = `/atractivos?${construirParametrosListado().toString()}`;
+    return `/atractivos/${id}?volver=${encodeURIComponent(volver)}`;
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-950">
       <Navbar />
@@ -241,14 +297,17 @@ export default function AtractivosPage() {
         </header>
 
         <section className="mt-8">
-          {!cargando && !error && atractivos.length > 0 && (
+          {!cargando && !error && (
             <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl bg-gray-50 p-4 md:grid-cols-3">
               <label className="block text-sm font-medium text-zinc-800">
                 Buscar por nombre
                 <input
                   type="text"
                   value={busquedaNombre}
-                  onChange={(event) => setBusquedaNombre(event.target.value)}
+                  onChange={(event) => {
+                    setBusquedaNombre(event.target.value);
+                    setPaginaActual(1);
+                  }}
                   className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   placeholder="Ej: adobe, puna, valle"
                 />
@@ -258,11 +317,14 @@ export default function AtractivosPage() {
                 Departamento
                 <select
                   value={departamentoSeleccionado}
-                  onChange={(event) => setDepartamentoSeleccionado(event.target.value)}
+                  onChange={(event) => {
+                    setDepartamentoSeleccionado(event.target.value);
+                    setPaginaActual(1);
+                  }}
                   className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 >
                   <option value="">Todos los departamentos</option>
-                  {departamentos.map((departamento) => (
+                  {departamentosCatamarca.map((departamento) => (
                     <option key={departamento} value={departamento}>
                       {departamento}
                     </option>
@@ -274,7 +336,10 @@ export default function AtractivosPage() {
                 Circuito
                 <select
                   value={circuitoSeleccionado}
-                  onChange={(event) => setCircuitoSeleccionado(event.target.value)}
+                  onChange={(event) => {
+                    setCircuitoSeleccionado(event.target.value);
+                    setPaginaActual(1);
+                  }}
                   className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 >
                   <option value="">Todos los circuitos</option>
@@ -301,51 +366,96 @@ export default function AtractivosPage() {
             </div>
           )}
 
-          {!cargando && !error && atractivos.length === 0 && (
+          {!cargando && !error && paginacion.totalRegistros === 0 && (
             <div className="rounded-lg border border-zinc-200 bg-white p-6 text-center">
-              <h2 className="text-lg font-semibold">No hay atractivos cargados</h2>
+              <h2 className="text-lg font-semibold">No hay atractivos para mostrar</h2>
               <p className="mt-2 text-sm text-zinc-600">
-                Cuando se agregue contenido turistico, lo vas a ver en esta seccion.
+                Cuando se agregue contenido turistico o ajustes los filtros, lo vas a ver en esta seccion.
               </p>
             </div>
           )}
 
           {!cargando &&
             !error &&
-            atractivos.length > 0 &&
-            (atractivosFiltrados.length > 0 ? (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {atractivosFiltrados.map((atractivo) => (
-                  <div key={atractivo._id} className="flex flex-col gap-3">
-                    <CardAtractivo atractivo={atractivo} />
-                    {esAdmin && (
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => abrirEdicionAtractivo(atractivo)}
-                          className="mr-2 rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => borrarAtractivo(atractivo._id)}
-                          className="rounded-md bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-                        >
-                          Borrar
-                        </button>
-                      </div>
-                    )}
+            paginacion.totalRegistros > 0 &&
+            (atractivos.length > 0 ? (
+              <>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {atractivos.map((atractivo) => (
+                    <div key={atractivo._id} className="flex flex-col gap-3">
+                      <CardAtractivo
+                        atractivo={atractivo}
+                        detalleHref={construirHrefDetalle(atractivo._id)}
+                      />
+                      {esAdmin && (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => abrirEdicionAtractivo(atractivo)}
+                            className="mr-2 rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => borrarAtractivo(atractivo._id)}
+                            className="rounded-md bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
+                          >
+                            Borrar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <nav className="mt-8 flex flex-col gap-3 border-t border-zinc-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm font-medium text-zinc-600">
+                    Pagina {paginacion.pagina} de {paginacion.totalPaginas} · {paginacion.totalRegistros} atractivos
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 sm:flex">
+                    <button
+                      type="button"
+                      onClick={() => irAPagina(1)}
+                      disabled={!paginacion.tieneAnterior}
+                      className="min-h-10 rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      Primera
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => irAPagina(paginacion.pagina - 1)}
+                      disabled={!paginacion.tieneAnterior}
+                      className="min-h-10 rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => irAPagina(paginacion.pagina + 1)}
+                      disabled={!paginacion.tieneSiguiente}
+                      className="min-h-10 rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      Siguiente
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => irAPagina(paginacion.totalPaginas)}
+                      disabled={!paginacion.tieneSiguiente}
+                      className="min-h-10 rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      Ultima
+                    </button>
                   </div>
-                ))}
-              </div>
+                </nav>
+              </>
             ) : (
               <div className="rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-sm">
                 <h2 className="text-lg font-semibold text-zinc-950">
-                  No se encontraron atractivos que coincidan con los filtros seleccionados.
+                  No se encontraron atractivos en esta pagina.
                 </h2>
                 <p className="mt-2 text-sm text-zinc-600">
-                  Proba ajustar el nombre, departamento o circuito para ampliar la busqueda.
+                  Volve a la primera pagina o ajusta los filtros para ampliar la busqueda.
                 </p>
               </div>
             ))}
@@ -394,27 +504,6 @@ export default function AtractivosPage() {
                   required
                 />
               </label>
-              <label className="mt-3 block text-sm font-medium text-zinc-800">
-                Circuito
-                <select
-                  value={atractivoEditando.circuitoId}
-                  onChange={(event) =>
-                    setAtractivoEditando((valor) => ({
-                      ...valor,
-                      circuitoId: event.target.value,
-                    }))
-                  }
-                  className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  required
-                >
-                  <option value="">Seleccionar circuito</option>
-                  {circuitos.map((circuito) => (
-                    <option key={circuito._id} value={circuito._id}>
-                      {circuito.nombre}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <div className="mt-5 flex justify-end gap-2">
                 <button
                   type="button"
@@ -432,5 +521,25 @@ export default function AtractivosPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function AtractivosPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-zinc-50 text-zinc-950">
+          <Navbar />
+          <main className="mx-auto w-full max-w-7xl px-5 py-10">
+            <LoadingState
+              titulo="Cargando atractivos"
+              mensaje="Estamos preparando la lista de atractivos."
+            />
+          </main>
+        </div>
+      }
+    >
+      <AtractivosContenido />
+    </Suspense>
   );
 }

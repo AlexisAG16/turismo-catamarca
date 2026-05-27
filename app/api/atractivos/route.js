@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import { verificarAdmin } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Atractivo from "@/models/Atractivo";
+import Circuito from "@/models/Circuito";
+import "@/models/Actividad";
 
 export const runtime = "nodejs";
 
@@ -32,13 +34,12 @@ function obtenerImagenUrl(imagen) {
 }
 
 function normalizarAtractivo(body = {}) {
-  const circuitoId =
-    typeof body?.circuitoId === "string"
-      ? body.circuitoId.trim()
-      : typeof body?.circuito === "string"
-        ? body.circuito.trim()
-        : "";
   const imagenUrl = obtenerImagenUrl(body?.imagen);
+  const actividades = Array.isArray(body?.actividadIds)
+    ? body.actividadIds
+    : Array.isArray(body?.actividades)
+      ? body.actividades
+      : [];
 
   return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
@@ -55,7 +56,7 @@ function normalizarAtractivo(body = {}) {
           : "",
       url: imagenUrl,
     },
-    circuito: circuitoId,
+    actividades: actividades.filter((id) => mongoose.Types.ObjectId.isValid(id)),
     youtubeUrl:
       typeof body?.youtubeUrl === "string" ? body.youtubeUrl.trim() : "",
     googleMapsUrl:
@@ -63,10 +64,37 @@ function normalizarAtractivo(body = {}) {
   };
 }
 
+function obtenerEnteroPositivo(valor, fallback) {
+  const numero = Number.parseInt(valor, 10);
+  return Number.isFinite(numero) && numero > 0 ? numero : fallback;
+}
+
+function escaparRegex(valor) {
+  return valor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function GET(request) {
   try {
-    const circuito = new URL(request.url).searchParams.get("circuito");
+    const searchParams = new URL(request.url).searchParams;
+    const circuito = searchParams.get("circuito");
+    const nombre = searchParams.get("nombre")?.trim();
+    const departamento = searchParams.get("departamento")?.trim();
+    const paginaSolicitada = obtenerEnteroPositivo(searchParams.get("page"), 1);
+    const limite = Math.min(
+      obtenerEnteroPositivo(searchParams.get("limit"), 6),
+      100
+    );
     const filtros = {};
+
+    if (nombre) {
+      filtros.nombre = { $regex: escaparRegex(nombre), $options: "i" };
+    }
+
+    if (departamento) {
+      filtros.departamento = departamento;
+    }
+
+    await connectDB();
 
     if (circuito) {
       if (!mongoose.Types.ObjectId.isValid(circuito)) {
@@ -76,16 +104,35 @@ export async function GET(request) {
         );
       }
 
-      filtros.circuito = circuito;
+      const circuitoDocumento = await Circuito.findById(circuito).select("atractivos");
+      filtros._id = { $in: circuitoDocumento?.atractivos || [] };
     }
 
-    await connectDB();
+    const totalRegistros = await Atractivo.countDocuments(filtros);
+    const totalPaginas = Math.max(1, Math.ceil(totalRegistros / limite));
+    const pagina = Math.min(paginaSolicitada, totalPaginas);
+    const saltar = (pagina - 1) * limite;
 
     const atractivos = await Atractivo.find(filtros)
-      .populate("circuito")
-      .sort({ nombre: 1 });
+      .populate("actividades")
+      .sort({ nombre: 1 })
+      .skip(saltar)
+      .limit(limite);
 
-    return NextResponse.json({ atractivos }, { status: 200 });
+    return NextResponse.json(
+      {
+        atractivos,
+        paginacion: {
+          pagina,
+          limite,
+          totalRegistros,
+          totalPaginas,
+          tieneAnterior: pagina > 1,
+          tieneSiguiente: pagina < totalPaginas,
+        },
+      },
+      { status: 200 }
+    );
   } catch {
     return NextResponse.json(
       { error: "No se pudieron obtener los atractivos." },
@@ -94,7 +141,7 @@ export async function GET(request) {
   }
 }
 
-// Crea un atractivo con datos multimedia y lo vincula a un circuito existente.
+// Crea un atractivo con datos multimedia y actividades asociadas.
 export async function POST(request) {
   const admin = validarAdmin(request);
 
@@ -109,21 +156,13 @@ export async function POST(request) {
     !datos.nombre ||
     !datos.descripcion ||
     !datos.departamento ||
-    !datos.imagen.url ||
-    !datos.circuito
+    !datos.imagen.url
   ) {
     return NextResponse.json(
       {
         error:
-          "El nombre, descripción, departamento, imagen y circuito son obligatorios.",
+          "El nombre, descripcion, departamento e imagen son obligatorios.",
       },
-      { status: 400 }
-    );
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(datos.circuito)) {
-    return NextResponse.json(
-      { error: "El circuito debe ser un ID valido de MongoDB." },
       { status: 400 }
     );
   }
@@ -133,7 +172,7 @@ export async function POST(request) {
 
     const atractivoCreado = await Atractivo.create(datos);
     const atractivo = await Atractivo.findById(atractivoCreado._id).populate(
-      "circuito"
+      "actividades"
     );
 
     return NextResponse.json(
@@ -151,7 +190,7 @@ export async function POST(request) {
   }
 }
 
-// Actualiza un atractivo validando permisos, datos obligatorios y circuito asociado.
+// Actualiza un atractivo validando permisos, datos obligatorios y actividades asociadas.
 export async function PUT(request) {
   try {
     const admin = validarAdmin(request);
@@ -172,19 +211,12 @@ export async function PUT(request) {
     const body = await request.json().catch(() => null);
     const datos = normalizarAtractivo(body);
 
-    if (!mongoose.Types.ObjectId.isValid(datos.circuito)) {
-      return NextResponse.json(
-        { error: "El circuito debe ser un ID valido de MongoDB." },
-        { status: 400 }
-      );
-    }
-
     await connectDB();
 
     const atractivo = await Atractivo.findByIdAndUpdate(id, datos, {
       new: true,
       runValidators: true,
-    }).populate("circuito");
+    }).populate("actividades");
 
     if (!atractivo) {
       return NextResponse.json(

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-label="El Rodeo">
+  <rect width="900" height="600" fill="#b9dce5"/>
+  <path d="M0 345c90-95 183-126 294-82 73 29 123 86 215 58 109-33 165-130 282-103 48 11 82 35 109 62v320H0z" fill="#7cab71"/>
+  <path d="M0 430c142-58 261-39 378-18 112 20 229 18 334-32 61-29 123-47 188-31v251H0z" fill="#4f8a56"/>
+  <path d="M336 332h235l45 88H291z" fill="#7d5034"/>
+  <rect x="315" y="420" width="280" height="95" fill="#9f7049"/>
+  <rect x="425" y="455" width="55" height="60" fill="#3a2d25"/>
+  <circle cx="145" cy="115" r="55" fill="#ffd16a"/>
+  <text x="450" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" font-weight="700" fill="#ffffff">El Rodeo</text>
+</svg>

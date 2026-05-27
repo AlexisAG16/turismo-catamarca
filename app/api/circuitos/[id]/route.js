@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { verificarAdmin } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Circuito from "@/models/Circuito";
+import Atractivo from "@/models/Atractivo";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,9 @@ function datosCircuito(body = {}) {
   return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
     descripcion: typeof body?.descripcion === "string" ? body.descripcion.trim() : "",
+    atractivoIds: Array.isArray(body?.atractivoIds)
+      ? body.atractivoIds.filter((id) => mongoose.Types.ObjectId.isValid(id))
+      : [],
   };
 }
 
@@ -36,9 +40,33 @@ export async function PUT(request, { params }) {
 
   try {
     await connectDB();
-    const circuito = await Circuito.findByIdAndUpdate(id, datos, { new: true, runValidators: true });
+    const circuito = await Circuito.findByIdAndUpdate(
+      id,
+      {
+        nombre: datos.nombre,
+        descripcion: datos.descripcion,
+        atractivos: datos.atractivoIds,
+      },
+      { new: true, runValidators: true }
+    );
     if (!circuito) return NextResponse.json({ error: "Circuito no encontrado." }, { status: 404 });
-    return NextResponse.json({ mensaje: "Circuito actualizado correctamente.", circuito }, { status: 200 });
+
+    if (datos.atractivoIds.length > 0) {
+      await Atractivo.updateMany(
+        { _id: { $in: datos.atractivoIds } },
+        { $set: { circuito: circuito._id } }
+      );
+    }
+
+    const circuitoActualizado = await Circuito.findById(circuito._id).populate(
+      "atractivos",
+      "nombre departamento"
+    );
+
+    return NextResponse.json({
+      mensaje: "Circuito actualizado correctamente.",
+      circuito: circuitoActualizado,
+    }, { status: 200 });
   } catch {
     return NextResponse.json({ error: "No se pudo actualizar el circuito." }, { status: 500 });
   }

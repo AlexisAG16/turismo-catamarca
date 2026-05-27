@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
 import LoadingState from "@/components/LoadingState";
@@ -21,6 +22,11 @@ function obtenerYouTubeEmbedUrl(url) {
     }
 
     if (parsedUrl.hostname.includes("youtube.com")) {
+      if (parsedUrl.pathname.startsWith("/live/")) {
+        const videoId = parsedUrl.pathname.replace("/live/", "");
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+      }
+
       const videoId = parsedUrl.searchParams.get("v");
       return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
     }
@@ -61,6 +67,8 @@ function obtenerGoogleMapsEmbedUrl(url, nombre, departamento) {
 
 export default function DetalleAtractivoPage() {
   const { id } = useParams();
+  const searchParams = useSearchParams();
+  const volverA = searchParams.get("volver") || "/atractivos";
   const [atractivo, setAtractivo] = useState(null);
   const [actividades, setActividades] = useState([]);
   const [usuario, setUsuario] = useState(null);
@@ -197,6 +205,13 @@ export default function DetalleAtractivoPage() {
       />
 
       <main className="mx-auto w-full max-w-7xl px-5 py-10">
+        <Link
+          href={volverA}
+          className="mb-5 inline-flex rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-100"
+        >
+          Volver a la lista
+        </Link>
+
         <section className="overflow-hidden rounded-xl bg-white shadow-sm">
           <div className="relative min-h-[360px]">
             <Image
@@ -233,11 +248,16 @@ export default function DetalleAtractivoPage() {
               <p className="mt-3 leading-7 text-zinc-600">
                 {atractivo.descripcion}
               </p>
-              {atractivo.circuito?.nombre && (
-                <p className="mt-5 text-sm font-medium text-emerald-700">
-                  Circuito: {atractivo.circuito.nombre}
+              <div className="mt-5">
+                <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+                  Actividades disponibles
                 </p>
-              )}
+                <p className="mt-1 text-sm text-zinc-600">
+                  {actividades.length > 0
+                    ? actividades.map((actividad) => actividad.nombre).join(", ")
+                    : "Todavia no hay actividades asociadas a este atractivo."}
+                </p>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -296,21 +316,25 @@ export default function DetalleAtractivoPage() {
               Todavia no hay actividades cargadas para este atractivo.
             </div>
           ) : (
-            <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-5 space-y-4">
               {actividades.map((actividad) => (
                 <article
                   key={actividad._id}
                   className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm"
                 >
-                  <h3 className="text-lg font-semibold">{actividad.nombre}</h3>
-                  <p className="mt-2 text-sm leading-6 text-zinc-600">
-                    {actividad.descripcion}
-                  </p>
-                  {actividad.duracionEstimada && (
-                    <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                      Duracion: {actividad.duracionEstimada}
-                    </p>
-                  )}
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">{actividad.nombre}</h3>
+                      <p className="mt-2 text-sm leading-6 text-zinc-600">
+                        {actividad.descripcion}
+                      </p>
+                    </div>
+                    {actividad.duracionEstimada && (
+                      <p className="w-fit rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                        {actividad.duracionEstimada}
+                      </p>
+                    )}
+                  </div>
                 </article>
               ))}
             </div>

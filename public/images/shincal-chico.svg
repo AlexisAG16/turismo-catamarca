@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-label="Ruinas del Shincal Chico">
+  <rect width="900" height="600" fill="#d8c3a4"/>
+  <path d="M0 338c145-74 245-43 374-93 119-46 203-102 320-69 92 26 139 88 206 72v352H0z" fill="#9d8060"/>
+  <path d="M0 430c160-55 294-28 450-62 143-31 261-76 450-24v256H0z" fill="#6f5b46"/>
+  <rect x="230" y="315" width="440" height="105" fill="#8f6c48"/>
+  <rect x="280" y="260" width="125" height="160" fill="#7b593d"/>
+  <rect x="495" y="260" width="125" height="160" fill="#7b593d"/>
+  <rect x="330" y="340" width="240" height="80" fill="#b28a5f"/>
+  <circle cx="745" cy="125" r="54" fill="#f0b75b"/>
+  <text x="450" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#ffffff">Ruinas del Shincal Chico</text>
+</svg>

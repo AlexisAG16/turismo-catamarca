@@ -11,6 +11,12 @@ const circuitoSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    atractivos: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Atractivo",
+      },
+    ],
   },
   {
     collection: "circuitos",

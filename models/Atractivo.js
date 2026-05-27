@@ -36,11 +36,12 @@ const atractivoSchema = new mongoose.Schema(
       type: imagenSchema,
       default: null,
     },
-    circuito: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Circuito",
-      required: true,
-    },
+    actividades: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Actividad",
+      },
+    ],
     youtubeUrl: {
       type: String,
       trim: true,

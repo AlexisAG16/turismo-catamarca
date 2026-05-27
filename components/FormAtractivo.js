@@ -1,25 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const departamentos = [
-  "Ambato",
-  "Ancasti",
-  "Andalgala",
-  "Antofagasta de la Sierra",
-  "Belen",
-  "Capayan",
-  "Capital",
-  "El Alto",
-  "Fray Mamerto Esquiu",
-  "La Paz",
-  "Paclin",
-  "Poman",
-  "Santa Maria",
-  "Santa Rosa",
-  "Tinogasta",
-  "Valle Viejo",
-];
+import { departamentosCatamarca } from "@/lib/departamentos";
 
 const estadoInicial = {
   nombre: "",
@@ -188,7 +170,7 @@ export default function FormAtractivo({ onAtractivoCreado }) {
             required
           >
             <option value="">Seleccionar departamento</option>
-            {departamentos.map((departamento) => (
+            {departamentosCatamarca.map((departamento) => (
               <option key={departamento} value={departamento}>
                 {departamento}
               </option>

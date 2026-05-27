@@ -43,7 +43,7 @@ export default function ActividadesPage() {
           setEsAdmin(response.ok && data.usuario?.rol === "admin");
         }
         if (response.ok && data.usuario?.rol === "admin") {
-          const atractivosResponse = await fetch("/api/atractivos", { cache: "no-store" });
+          const atractivosResponse = await fetch("/api/atractivos?limit=100", { cache: "no-store" });
           const atractivosData = await atractivosResponse.json();
           if (activo && atractivosResponse.ok) {
             setAtractivos(Array.isArray(atractivosData.atractivos) ? atractivosData.atractivos : []);
@@ -207,45 +207,41 @@ export default function ActividadesPage() {
           )}
 
           {!cargando && !error && actividades.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-4">
               {actividades.map((actividad) => (
                 <article
                   key={actividad._id}
-                  className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg"
+                  className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md"
                 >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0 flex-1">
                       <h2 className="text-xl font-semibold tracking-tight text-zinc-950">
                         {actividad.nombre}
                       </h2>
                       <p className="mt-1 text-sm text-zinc-500">
                         {actividad.atractivo?.nombre || "Atractivo a confirmar"}
                       </p>
-                      <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
+                      <p className="mt-3 text-sm leading-6 text-zinc-600">
                         {actividad.descripcion || "Sin descripcion cargada."}
                       </p>
                     </div>
-                    <span className="w-fit rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-800">
-                      {formatearCosto(actividad.costoAproximado)}
-                    </span>
-                  </div>
-
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-md border border-zinc-100 bg-zinc-50 p-3">
+                    <div className="grid min-w-64 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                      <div className="rounded-md border border-zinc-100 bg-zinc-50 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                         Duracion estimada
                       </p>
                       <p className="mt-1 text-sm font-medium text-zinc-950">
                         {actividad.duracionEstimada || "A confirmar"}
                       </p>
-                    </div>
-                    <div className="rounded-md border border-zinc-100 bg-zinc-50 p-3">
+                      </div>
+                      <div className="rounded-md border border-zinc-100 bg-zinc-50 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                         Costo aproximado
                       </p>
                       <p className="mt-1 text-sm font-medium text-zinc-950">
                         {formatearCosto(actividad.costoAproximado)}
                       </p>
+                      </div>
                     </div>
                   </div>
                   {esAdmin && (

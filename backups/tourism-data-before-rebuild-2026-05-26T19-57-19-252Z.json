@@ -1,0 +1,199 @@
+{
+  "createdAt": "2026-05-26T19:57:19.253Z",
+  "collections": {
+    "circuitos": [
+      {
+        "_id": "6a0e04e60a16d02fa4e7b0e8",
+        "nombre": "Circuito de Montana y Naturaleza",
+        "descripcion": "Recorrido orientado a la exploracion de paisajes naturales de Catamarca, con propuestas al aire libre que integran montanas, valles, formaciones geologicas y miradores escenicos. Es ideal para visitantes interesados en actividades recreativas, fotografia y contacto directo con el entorno.",
+        "temporadaIdeal": "",
+        "createdAt": "2026-05-20T19:00:54.994Z",
+        "updatedAt": "2026-05-26T18:59:43.936Z",
+        "__v": 0
+      },
+      {
+        "_id": "6a15f093352814d758c16004",
+        "nombre": "Circuito Puna y Paisajes Volcanicos",
+        "createdAt": "2026-05-26T19:12:19.566Z",
+        "descripcion": "Recorrido por ambientes de altura, formaciones volcanicas y paisajes abiertos de la Puna catamarquena. Esta propuesta esta orientada a visitantes interesados en geologia, fotografia, naturaleza y experiencias de larga distancia con acompanamiento local.",
+        "updatedAt": "2026-05-26T19:13:36.633Z"
+      },
+      {
+        "_id": "6a15f093352814d758c16007",
+        "nombre": "Circuito Miradores del Valle Central",
+        "createdAt": "2026-05-26T19:12:19.755Z",
+        "descripcion": "Itinerario escenico cercano al Valle Central de Catamarca, pensado para recorrer caminos de cornisa, miradores naturales y puntos panoramicos. Es una alternativa adecuada para quienes buscan vistas amplias, fotografia y contacto con el paisaje serrano.",
+        "updatedAt": "2026-05-26T19:13:36.817Z"
+      },
+      {
+        "_id": "6a15f093352814d758c1600a",
+        "nombre": "Circuito Altoandino del Volcan Galan",
+        "createdAt": "2026-05-26T19:12:19.933Z",
+        "descripcion": "Ruta de alta montana orientada a la observacion de ambientes puneinos, lagunas, salares y formaciones volcanicas. Por sus condiciones de altura y distancia, se recomienda planificarla con prestadores habilitados y vehiculos adecuados.",
+        "updatedAt": "2026-05-26T19:13:36.999Z"
+      },
+      {
+        "_id": "6a15f093352814d758c1600d",
+        "nombre": "Circuito Historico y Religioso de la Capital",
+        "createdAt": "2026-05-26T19:12:20.110Z",
+        "descripcion": "Recorrido urbano por espacios patrimoniales, religiosos y culturales de San Fernando del Valle de Catamarca. Integra templos, plazas y edificios representativos para comprender la historia, la arquitectura y las tradiciones locales.",
+        "updatedAt": "2026-05-26T19:13:37.196Z"
+      }
+    ],
+    "atractivos": [
+      {
+        "_id": "6a0e05a40a16d02fa4e7b0e9",
+        "nombre": "Dunas de Taton",
+        "departamento": "Tinogasta",
+        "descripcion": "Las Dunas de Taton conforman uno de los paisajes naturales mas destacados del departamento Tinogasta. Sus extensos medanos de arena clara, rodeados por montanas y cielo abierto, ofrecen un entorno ideal para la fotografia, las caminatas y las actividades recreativas vinculadas al turismo aventura.",
+        "imagen": {
+          "public_id": "",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Dunas_de_Taton._Catamarca.JPG/330px-Dunas_de_Taton._Catamarca.JPG"
+        },
+        "circuito": "6a0e04e60a16d02fa4e7b0e8",
+        "youtubeUrl": "https://www.youtube.com/watch?v=UYDNayxljSg",
+        "googleMapsUrl": "https://www.google.com/maps/place/Dunas+de+Tat%C3%B3n/@-27.369634,-67.5922194,8060m/data=!3m1!1e3!4m10!1m2!2m1!1sdunas+de+taton!3m6!1s0x969fcf98601b2217:0xd6376323625b3a0a!8m2!3d-27.354017!4d-67.5817336!15sCg5kdW5hcyBkZSB0YXRvbpIBC3NjZW5pY19zcG904AEA!16s%2Fg%2F11h8f4w0kc?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D",
+        "createdAt": "2026-05-20T19:04:04.940Z",
+        "updatedAt": "2026-05-26T19:00:20.329Z",
+        "__v": 0
+      },
+      {
+        "_id": "6a15e7122bb8b7b9c33e298e",
+        "nombre": "El Shincal de Quimivil",
+        "departamento": "Belen",
+        "descripcion": "Sitio arqueologico inca ubicado en Londres, departamento Belen, con recintos ceremoniales, kallankas y paisajes del valle.",
+        "imagen": {
+          "public_id": "wikimedia-commons-shincal-de-quimivil",
+          "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shincal_de_Quimivil.jpg"
+        },
+        "circuito": "6a0e04e60a16d02fa4e7b0e8",
+        "youtubeUrl": "https://www.youtube.com/watch?v=qO4-jQwC0qA",
+        "googleMapsUrl": "https://www.google.com/maps/search/El+Shincal+de+Quimivil",
+        "createdAt": {},
+        "updatedAt": "2026-05-26T18:42:35.485Z"
+      },
+      {
+        "_id": "6a15f093352814d758c16005",
+        "nombre": "Campo de Piedra Pomez",
+        "circuito": "6a15f093352814d758c16004",
+        "createdAt": "2026-05-26T19:12:19.566Z",
+        "departamento": "Antofagasta de la Sierra",
+        "descripcion": "Area natural protegida ubicada en la Puna catamarquena, reconocida por sus extensas formaciones de piedra pomez moldeadas por el viento. El paisaje combina tonos claros, crestas erosionadas y una amplitud visual singular, por lo que se recomienda visitarlo con guia y vehiculo apto para caminos de altura.",
+        "googleMapsUrl": "https://maps.google.com/maps?q=Campo%20de%20Piedra%20Pomez%20Catamarca&output=embed",
+        "imagen": {
+          "public_id": "wikimedia-campo-piedra-pomez",
+          "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Campo_de_piedra_p%C3%B3mez_en_Catamarca_-_Argentina.jpg"
+        },
+        "updatedAt": "2026-05-26T19:13:36.633Z",
+        "youtubeUrl": "https://www.youtube.com/watch?v=4ss--mOw1TE"
+      },
+      {
+        "_id": "6a15f093352814d758c16008",
+        "nombre": "Cuesta del Portezuelo",
+        "circuito": "6a15f093352814d758c16007",
+        "createdAt": "2026-05-26T19:12:19.755Z",
+        "departamento": "Valle Viejo",
+        "descripcion": "Camino de montana ubicado en el departamento Valle Viejo, famoso por sus curvas, miradores y vistas hacia el valle catamarqueno. Su recorrido permite apreciar la transicion entre el entorno urbano y el paisaje serrano, con paradas recomendadas para fotografia y contemplacion.",
+        "googleMapsUrl": "https://maps.google.com/maps?q=Cuesta%20del%20Portezuelo%20Catamarca&output=embed",
+        "imagen": {
+          "public_id": "wikimedia-cuesta-portezuelo",
+          "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mirador_del_Valle_de_Catamarca_desde_la_Cuesta_del_Portezuelo.jpg"
+        },
+        "updatedAt": "2026-05-26T19:13:36.817Z",
+        "youtubeUrl": "https://www.youtube.com/watch?v=YC0muG-PxXc"
+      },
+      {
+        "_id": "6a15f093352814d758c1600b",
+        "nombre": "Volcan Galan",
+        "circuito": "6a15f093352814d758c1600a",
+        "createdAt": "2026-05-26T19:12:19.933Z",
+        "departamento": "Antofagasta de la Sierra",
+        "descripcion": "Imponente caldera volcanica de la Puna catamarquena, reconocida por su escala, sus paisajes de altura y la presencia de lagunas y salares en el entorno. La visita requiere preparacion previa, abrigo, hidratacion y acompanamiento especializado por tratarse de una zona remota.",
+        "googleMapsUrl": "https://maps.google.com/maps?q=Volcan%20Galan%20Catamarca&output=embed",
+        "imagen": {
+          "public_id": "wikimedia-volcan-galan",
+          "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Volcan_galan_p.wiki.jpg"
+        },
+        "updatedAt": "2026-05-26T19:13:36.999Z",
+        "youtubeUrl": "https://www.youtube.com/watch?v=baNck2VVmtQ"
+      },
+      {
+        "_id": "6a15f093352814d758c1600e",
+        "nombre": "Catedral Basilica Nuestra Senora del Valle",
+        "circuito": "6a15f093352814d758c1600d",
+        "createdAt": "2026-05-26T19:12:20.110Z",
+        "departamento": "Capital",
+        "descripcion": "Templo emblematico de San Fernando del Valle de Catamarca y centro de devocion mariana del noroeste argentino. Su arquitectura, su ubicacion frente a la plaza principal y el Camarin de la Virgen la convierten en una visita destacada para quienes buscan patrimonio, historia y espiritualidad.",
+        "googleMapsUrl": "https://maps.google.com/maps?q=Catedral%20Basilica%20Nuestra%20Senora%20del%20Valle%20Catamarca&output=embed",
+        "imagen": {
+          "public_id": "wikimedia-basilica-catamarca",
+          "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Basilica_de_Catamarca.jpg"
+        },
+        "updatedAt": "2026-05-26T19:13:37.196Z",
+        "youtubeUrl": "https://www.youtube.com/watch?v=B9LH0tP0Tos"
+      }
+    ],
+    "actividades": [
+      {
+        "_id": "6a0e05f30a16d02fa4e7b0ea",
+        "nombre": "Sandboard y recorridos por las dunas",
+        "duracionEstimada": "2 a 3 horas",
+        "atractivo": "6a0e05a40a16d02fa4e7b0e9",
+        "createdAt": "2026-05-20T19:05:23.827Z",
+        "updatedAt": "2026-05-26T19:00:02.792Z",
+        "__v": 0,
+        "descripcion": "Actividad recreativa que permite disfrutar el paisaje de las Dunas de Taton mediante descensos controlados sobre arena y caminatas panoramicas por el entorno. Se recomienda realizarla con acompanamiento local, hidratacion adecuada y en horarios de menor exposicion solar."
+      },
+      {
+        "_id": "6a15f093352814d758c16006",
+        "atractivo": "6a15f093352814d758c16005",
+        "nombre": "Caminata interpretativa por formaciones volcanicas",
+        "costoAproximado": 0,
+        "createdAt": "2026-05-26T19:12:19.566Z",
+        "descripcion": "Recorrido guiado por sectores representativos del campo de piedra pomez para observar geoformas, texturas, miradores naturales y variaciones de luz sobre el paisaje. Se recomienda llevar abrigo, agua, proteccion solar y respetar las indicaciones de conservacion del area.",
+        "duracionEstimada": "3 a 4 horas",
+        "updatedAt": "2026-05-26T19:13:36.633Z"
+      },
+      {
+        "_id": "6a15f093352814d758c16009",
+        "atractivo": "6a15f093352814d758c16008",
+        "nombre": "Recorrido panoramico y fotografia",
+        "costoAproximado": 0,
+        "createdAt": "2026-05-26T19:12:19.755Z",
+        "descripcion": "Actividad de baja dificultad para transitar la cuesta, detenerse en miradores y registrar vistas del valle. Se recomienda realizar el paseo con luz diurna, conducir con precaucion y prever tiempo para paradas breves en puntos seguros.",
+        "duracionEstimada": "1 a 2 horas",
+        "updatedAt": "2026-05-26T19:13:36.817Z"
+      },
+      {
+        "_id": "6a15f093352814d758c1600c",
+        "atractivo": "6a15f093352814d758c1600b",
+        "nombre": "Excursion altoandina al entorno del Galan",
+        "costoAproximado": 0,
+        "createdAt": "2026-05-26T19:12:19.933Z",
+        "descripcion": "Salida de jornada completa para recorrer caminos de altura, observar paisajes volcanicos y realizar paradas interpretativas en puntos panoramicos. Es importante considerar aclimatacion, condiciones climaticas y disponibilidad de servicios especializados.",
+        "duracionEstimada": "8 a 10 horas",
+        "updatedAt": "2026-05-26T19:13:36.999Z"
+      },
+      {
+        "_id": "6a15f094352814d758c1600f",
+        "nombre": "Visita patrimonial al templo y Paseo de la Fe",
+        "atractivo": "6a15f093352814d758c1600e",
+        "costoAproximado": 0,
+        "createdAt": "2026-05-26T19:12:20.110Z",
+        "descripcion": "Recorrido breve por la fachada, el interior del templo, el entorno de la plaza principal y los espacios vinculados a la devocion de la Virgen del Valle. Se recomienda respetar horarios de celebraciones y mantener una conducta acorde al caracter religioso del sitio.",
+        "duracionEstimada": "45 minutos a 1 hora",
+        "updatedAt": "2026-05-26T19:13:37.196Z"
+      },
+      {
+        "_id": "6a15f229216e535530ce5f5b",
+        "nombre": "Recorrido arqueologico por El Shincal",
+        "descripcion": "Visita interpretativa por el sitio arqueologico incaico de El Shincal de Quimivil, con recorrido por plazas ceremoniales, recintos administrativos, senderos internos y puntos panoramicos del entorno. La actividad permite comprender la importancia historica del lugar y se recomienda realizarla con guia local para una mejor contextualizacion patrimonial.",
+        "duracionEstimada": "1 hora y 30 minutos a 2 horas",
+        "costoAproximado": 0,
+        "atractivo": "6a15e7122bb8b7b9c33e298e",
+        "createdAt": {},
+        "updatedAt": {}
+      }
+    ]
+  }
+}

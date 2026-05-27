@@ -5,16 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Toast from "@/components/Toast";
 import LoadingState from "@/components/LoadingState";
-
-const departamentos = [
-  "Tinogasta",
-  "Belen",
-  "Antofagasta de la Sierra",
-  "Andalgala",
-  "Poman",
-  "Santa Maria",
-  "Capital",
-];
+import { departamentosCatamarca } from "@/lib/departamentos";
 
 const estadoInicial = {
   nombre: "",
@@ -23,13 +14,13 @@ const estadoInicial = {
   imagenUrl: "",
   youtubeUrl: "",
   googleMapsUrl: "",
-  circuitoId: "",
+  actividadIds: [],
 };
 
 export default function CargarAtractivoPage() {
   const router = useRouter();
   const [formulario, setFormulario] = useState(estadoInicial);
-  const [circuitos, setCircuitos] = useState([]);
+  const [actividades, setActividades] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [verificando, setVerificando] = useState(true);
   const [intentoEnviar, setIntentoEnviar] = useState(false);
@@ -38,8 +29,8 @@ export default function CargarAtractivoPage() {
   useEffect(() => {
     let activo = true;
 
-    // Verifica permisos y carga circuitos para asociar el atractivo desde el formulario.
-    async function verificarAdminYCargarCircuitos() {
+    // Verifica permisos y carga actividades para asociarlas al atractivo nuevo.
+    async function verificarAdminYCargarActividades() {
       try {
         const sessionResponse = await fetch("/api/auth/session", {
           cache: "no-store",
@@ -51,25 +42,27 @@ export default function CargarAtractivoPage() {
           return;
         }
 
-        const circuitosResponse = await fetch("/api/circuitos", {
+        const actividadesResponse = await fetch("/api/actividades", {
           cache: "no-store",
         });
-        const circuitosData = await circuitosResponse.json();
+        const actividadesData = await actividadesResponse.json();
 
-        if (!circuitosResponse.ok) {
+        if (!actividadesResponse.ok) {
           throw new Error(
-            circuitosData.mensaje || "No se pudieron cargar los circuitos."
+            actividadesData.mensaje || "No se pudieron cargar las actividades."
           );
         }
 
         if (activo) {
-          setCircuitos(
-            Array.isArray(circuitosData.circuitos) ? circuitosData.circuitos : []
+          setActividades(
+            Array.isArray(actividadesData.actividades)
+              ? actividadesData.actividades
+              : []
           );
         }
       } catch {
         if (activo) {
-          setCircuitos([]);
+          setActividades([]);
         }
       } finally {
         if (activo) {
@@ -78,7 +71,7 @@ export default function CargarAtractivoPage() {
       }
     }
 
-    verificarAdminYCargarCircuitos();
+    verificarAdminYCargarActividades();
 
     return () => {
       activo = false;
@@ -88,6 +81,15 @@ export default function CargarAtractivoPage() {
   function manejarCambio(event) {
     const { name, value } = event.target;
     setFormulario((valores) => ({ ...valores, [name]: value }));
+  }
+
+  function alternarActividad(id) {
+    setFormulario((valores) => ({
+      ...valores,
+      actividadIds: valores.actividadIds.includes(id)
+        ? valores.actividadIds.filter((actividadId) => actividadId !== id)
+        : [...valores.actividadIds, id],
+    }));
   }
 
   function campoInvalido(nombreCampo) {
@@ -110,7 +112,6 @@ export default function CargarAtractivoPage() {
       "descripcion",
       "departamento",
       "imagenUrl",
-      "circuitoId",
     ];
 
     if (camposObligatorios.some((campo) => !formulario[campo].trim())) {
@@ -134,7 +135,6 @@ export default function CargarAtractivoPage() {
           : null,
         youtubeUrl: formulario.youtubeUrl,
         googleMapsUrl: formulario.googleMapsUrl,
-        circuito: formulario.circuitoId,
       };
 
       const response = await fetch("/api/atractivos", {
@@ -149,6 +149,24 @@ export default function CargarAtractivoPage() {
       if (!response.ok) {
         throw new Error(data.error || data.mensaje || "No se pudo cargar el atractivo.");
       }
+
+      await Promise.all(
+        formulario.actividadIds.map((actividadId) => {
+          const actividad = actividades.find((item) => item._id === actividadId);
+          if (!actividad) return null;
+
+          return fetch(`/api/actividades/${actividadId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nombre: actividad.nombre,
+              descripcion: actividad.descripcion,
+              duracionEstimada: actividad.duracionEstimada || "",
+              atractivoId: data.atractivo._id,
+            }),
+          });
+        })
+      );
 
       setToast({ mensaje: "Atractivo guardado correctamente en la base de datos.", tipo: "success" });
       setFormulario(estadoInicial);
@@ -174,7 +192,7 @@ export default function CargarAtractivoPage() {
         <main className="mx-auto mt-10 max-w-md rounded-lg bg-white p-6 shadow-md">
           <LoadingState
             titulo="Verificando permisos"
-            mensaje="Estamos cargando los circuitos y preparando el formulario."
+            mensaje="Estamos cargando las actividades y preparando el formulario."
             compacto
           />
         </main>
@@ -192,7 +210,7 @@ export default function CargarAtractivoPage() {
           Cargar Atractivo
         </h1>
         <p className="mt-2 text-sm leading-6 text-zinc-600">
-          Registra un lugar turistico con imagen, multimedia y circuito asociado.
+          Registra un lugar turistico con imagen, multimedia y actividades asociadas.
         </p>
 
         <form onSubmit={manejarEnvio} className="mt-6 space-y-5">
@@ -237,7 +255,7 @@ export default function CargarAtractivoPage() {
               className={`mt-2 w-full rounded-md border px-3 py-2 text-sm outline-none transition ${clasesCampo("departamento")}`}
             >
               <option value="">Seleccionar departamento</option>
-              {departamentos.map((departamento) => (
+              {departamentosCatamarca.map((departamento) => (
                 <option key={departamento} value={departamento}>
                   {departamento}
                 </option>
@@ -251,25 +269,31 @@ export default function CargarAtractivoPage() {
           </label>
 
           <label className="block text-sm font-medium text-zinc-800">
-            Circuito
-            <select
-              name="circuitoId"
-              value={formulario.circuitoId}
-              onChange={manejarCambio}
-              className={`mt-2 w-full rounded-md border px-3 py-2 text-sm outline-none transition ${clasesCampo("circuitoId")}`}
-            >
-              <option value="">Seleccionar circuito</option>
-              {circuitos.map((circuito) => (
-                <option key={circuito._id} value={circuito._id}>
-                  {circuito.nombre}
-                </option>
-              ))}
-            </select>
-            {campoInvalido("circuitoId") && (
-              <span className="mt-1 block text-xs font-medium text-red-600">
-                Este campo es obligatorio
-              </span>
-            )}
+            Actividades asociadas
+            <div className="mt-2 max-h-48 space-y-2 overflow-auto rounded-md border border-zinc-300 bg-white p-3">
+              {actividades.length === 0 ? (
+                <p className="text-sm text-zinc-500">
+                  No hay actividades disponibles para asociar.
+                </p>
+              ) : (
+                actividades.map((actividad) => (
+                  <label key={actividad._id} className="flex items-start gap-2 text-sm text-zinc-700">
+                    <input
+                      type="checkbox"
+                      checked={formulario.actividadIds.includes(actividad._id)}
+                      onChange={() => alternarActividad(actividad._id)}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block font-medium text-zinc-900">{actividad.nombre}</span>
+                      <span className="text-xs text-zinc-500">
+                        {actividad.atractivo?.nombre || "Sin atractivo asignado"}
+                      </span>
+                    </span>
+                  </label>
+                ))
+              )}
+            </div>
           </label>
 
           <label className="block text-sm font-medium text-zinc-800">

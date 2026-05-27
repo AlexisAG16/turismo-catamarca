@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verificarAdmin, verificarToken } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Circuito from "@/models/Circuito";
+import Atractivo from "@/models/Atractivo";
 import mongoose from "mongoose";
 
 export const runtime = "nodejs";
@@ -37,6 +38,9 @@ function normalizarCircuito(body = {}) {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
     descripcion:
       typeof body?.descripcion === "string" ? body.descripcion.trim() : "",
+    atractivoIds: Array.isArray(body?.atractivoIds)
+      ? body.atractivoIds.filter((id) => mongoose.Types.ObjectId.isValid(id))
+      : [],
   };
 }
 
@@ -44,9 +48,11 @@ export async function GET() {
   try {
     await connectDB();
 
-    const circuitos = await Circuito.find().sort({ nombre: 1 });
+    const circuitosConAtractivos = await Circuito.find()
+      .populate("atractivos", "nombre departamento")
+      .sort({ nombre: 1 });
 
-    return NextResponse.json({ circuitos }, { status: 200 });
+    return NextResponse.json({ circuitos: circuitosConAtractivos }, { status: 200 });
   } catch {
     return NextResponse.json(
       { error: "No se pudieron obtener los circuitos." },
@@ -76,12 +82,28 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    const circuito = await Circuito.create(datos);
+    const circuito = await Circuito.create({
+      nombre: datos.nombre,
+      descripcion: datos.descripcion,
+      atractivos: datos.atractivoIds,
+    });
+
+    if (datos.atractivoIds.length > 0) {
+      await Atractivo.updateMany(
+        { _id: { $in: datos.atractivoIds } },
+        { $set: { circuito: circuito._id } }
+      );
+    }
 
     return NextResponse.json(
       {
         mensaje: "Circuito creado correctamente.",
-        circuito,
+        circuito: {
+          ...circuito.toObject(),
+          atractivos: await Atractivo.find({ circuito: circuito._id })
+            .select("nombre departamento circuito")
+            .sort({ nombre: 1 }),
+        },
       },
       { status: 201 }
     );
@@ -123,7 +145,11 @@ export async function PUT(request) {
 
     await connectDB();
 
-    const circuito = await Circuito.findByIdAndUpdate(id, datos, {
+    const circuito = await Circuito.findByIdAndUpdate(id, {
+      nombre: datos.nombre,
+      descripcion: datos.descripcion,
+      atractivos: datos.atractivoIds,
+    }, {
       new: true,
       runValidators: true,
     });
@@ -135,8 +161,23 @@ export async function PUT(request) {
       );
     }
 
+    if (datos.atractivoIds.length > 0) {
+      await Atractivo.updateMany(
+        { _id: { $in: datos.atractivoIds } },
+        { $set: { circuito: circuito._id } }
+      );
+    }
+
     return NextResponse.json(
-      { mensaje: "Circuito actualizado correctamente.", circuito },
+      {
+        mensaje: "Circuito actualizado correctamente.",
+        circuito: {
+          ...circuito.toObject(),
+          atractivos: await Atractivo.find({ circuito: circuito._id })
+            .select("nombre departamento circuito")
+            .sort({ nombre: 1 }),
+        },
+      },
       { status: 200 }
     );
   } catch {

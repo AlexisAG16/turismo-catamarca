@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-label="La Merced Paclin">
+  <rect width="900" height="600" fill="#c7e1d5"/>
+  <path d="M0 315c135-78 240-56 355-85 121-30 210-88 336-39 79 31 136 72 209 51v358H0z" fill="#79a768"/>
+  <path d="M0 420c117-36 205-22 310-49 127-33 214-22 314 22 104 46 190 8 276-16v223H0z" fill="#3f7c4d"/>
+  <path d="M430 300c-45 56-77 121-94 196h228c-19-77-51-141-96-196z" fill="#285f3e"/>
+  <path d="M450 245c-35 58-62 118-79 182h158c-18-64-45-124-79-182z" fill="#2f7049"/>
+  <path d="M430 420h40v100h-40z" fill="#6a452f"/>
+  <circle cx="725" cy="110" r="52" fill="#f6cf72"/>
+  <text x="450" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#ffffff">La Merced - Paclin</text>
+</svg>

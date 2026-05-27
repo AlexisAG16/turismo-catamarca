@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-label="Icano La Paz">
+  <rect width="900" height="600" fill="#e6d19d"/>
+  <path d="M0 360c132-46 244-43 366-70 132-29 265-80 404-31 47 17 88 38 130 42v299H0z" fill="#b88f51"/>
+  <path d="M0 445c171-55 314-33 450-17 156 18 285-4 450-64v236H0z" fill="#8e6738"/>
+  <rect x="315" y="295" width="270" height="125" fill="#b35f3a"/>
+  <path d="M295 295h310l-50-56H345z" fill="#7f3f28"/>
+  <rect x="420" y="345" width="58" height="75" fill="#3f2b23"/>
+  <circle cx="700" cy="120" r="58" fill="#f4ba54"/>
+  <text x="450" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" font-weight="700" fill="#ffffff">Icano - La Paz</text>
+</svg>

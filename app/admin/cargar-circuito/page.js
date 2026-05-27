@@ -9,11 +9,13 @@ import LoadingState from "@/components/LoadingState";
 const estadoInicial = {
   nombre: "",
   descripcion: "",
+  atractivoIds: [],
 };
 
 export default function CargarCircuitoPage() {
   const router = useRouter();
   const [formulario, setFormulario] = useState(estadoInicial);
+  const [atractivos, setAtractivos] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [verificando, setVerificando] = useState(true);
   const [intentoEnviar, setIntentoEnviar] = useState(false);
@@ -22,14 +24,27 @@ export default function CargarCircuitoPage() {
   useEffect(() => {
     let activo = true;
 
-    // Verifica que exista una sesion valida antes de permitir cargar circuitos.
-    async function verificarSesion() {
+    // Verifica sesion y carga atractivos para asociarlos al circuito nuevo.
+    async function verificarSesionYCargarAtractivos() {
       try {
         const response = await fetch("/api/auth/session", { cache: "no-store" });
 
         if (!response.ok) {
           router.push("/");
           return;
+        }
+
+        const atractivosResponse = await fetch("/api/atractivos?limit=100", {
+          cache: "no-store",
+        });
+        const atractivosData = await atractivosResponse.json();
+
+        if (activo && atractivosResponse.ok) {
+          setAtractivos(
+            Array.isArray(atractivosData.atractivos)
+              ? atractivosData.atractivos
+              : []
+          );
         }
       } catch {
         router.push("/");
@@ -40,7 +55,7 @@ export default function CargarCircuitoPage() {
       }
     }
 
-    verificarSesion();
+    verificarSesionYCargarAtractivos();
 
     return () => {
       activo = false;
@@ -50,6 +65,15 @@ export default function CargarCircuitoPage() {
   function manejarCambio(event) {
     const { name, value } = event.target;
     setFormulario((valores) => ({ ...valores, [name]: value }));
+  }
+
+  function alternarAtractivo(id) {
+    setFormulario((valores) => ({
+      ...valores,
+      atractivoIds: valores.atractivoIds.includes(id)
+        ? valores.atractivoIds.filter((atractivoId) => atractivoId !== id)
+        : [...valores.atractivoIds, id],
+    }));
   }
 
   function campoInvalido(nombreCampo) {
@@ -165,6 +189,32 @@ export default function CargarCircuitoPage() {
                 Este campo es obligatorio
               </span>
             )}
+          </label>
+
+          <label className="block text-sm font-medium text-zinc-800">
+            Atractivos del circuito
+            <div className="mt-2 max-h-56 space-y-2 overflow-auto rounded-md border border-zinc-300 bg-white p-3">
+              {atractivos.length === 0 ? (
+                <p className="text-sm text-zinc-500">
+                  No hay atractivos disponibles para asociar.
+                </p>
+              ) : (
+                atractivos.map((atractivo) => (
+                  <label key={atractivo._id} className="flex items-start gap-2 text-sm text-zinc-700">
+                    <input
+                      type="checkbox"
+                      checked={formulario.atractivoIds.includes(atractivo._id)}
+                      onChange={() => alternarAtractivo(atractivo._id)}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block font-medium text-zinc-900">{atractivo.nombre}</span>
+                      <span className="text-xs text-zinc-500">{atractivo.departamento}</span>
+                    </span>
+                  </label>
+                ))
+              )}
+            </div>
           </label>
 
           <button

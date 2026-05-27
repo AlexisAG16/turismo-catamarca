@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { verificarAdmin } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Atractivo from "@/models/Atractivo";
+import "@/models/Actividad";
 
 export const runtime = "nodejs";
 
@@ -18,13 +19,18 @@ function imagenUrl(imagen) {
 }
 
 function datosAtractivo(body = {}) {
-  const circuito = typeof body?.circuitoId === "string" ? body.circuitoId.trim() : typeof body?.circuito === "string" ? body.circuito.trim() : "";
+  const actividades = Array.isArray(body?.actividadIds)
+    ? body.actividadIds
+    : Array.isArray(body?.actividades)
+      ? body.actividades
+      : [];
+
   return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
     descripcion: typeof body?.descripcion === "string" ? body.descripcion.trim() : "",
     departamento: typeof body?.departamento === "string" ? body.departamento.trim() : "",
     imagen: { public_id: typeof body?.imagen?.public_id === "string" ? body.imagen.public_id.trim() : "", url: imagenUrl(body?.imagen) },
-    circuito,
+    actividades: actividades.filter((id) => mongoose.Types.ObjectId.isValid(id)),
     youtubeUrl: typeof body?.youtubeUrl === "string" ? body.youtubeUrl.trim() : "",
     googleMapsUrl: typeof body?.googleMapsUrl === "string" ? body.googleMapsUrl.trim() : "",
   };
@@ -39,7 +45,7 @@ export async function GET(_request, { params }) {
 
   try {
     await connectDB();
-    const atractivo = await Atractivo.findById(id).populate("circuito");
+    const atractivo = await Atractivo.findById(id).populate("actividades");
     if (!atractivo) return NextResponse.json({ error: "Atractivo no encontrado." }, { status: 404 });
     return NextResponse.json({ atractivo }, { status: 200 });
   } catch {
@@ -59,16 +65,12 @@ export async function PUT(request, { params }) {
 
   const body = await request.json().catch(() => null);
   const datos = datosAtractivo(body);
-  if (!datos.nombre || !datos.descripcion || !datos.departamento || !datos.imagen.url || !datos.circuito) {
-    return NextResponse.json({ error: "El nombre, descripción, departamento, imagen y circuito son obligatorios." }, { status: 400 });
+  if (!datos.nombre || !datos.descripcion || !datos.departamento || !datos.imagen.url) {
+    return NextResponse.json({ error: "El nombre, descripcion, departamento e imagen son obligatorios." }, { status: 400 });
   }
-  if (!mongoose.Types.ObjectId.isValid(datos.circuito)) {
-    return NextResponse.json({ error: "El circuito debe ser un ID valido de MongoDB." }, { status: 400 });
-  }
-
   try {
     await connectDB();
-    const atractivo = await Atractivo.findByIdAndUpdate(id, datos, { new: true, runValidators: true }).populate("circuito");
+    const atractivo = await Atractivo.findByIdAndUpdate(id, datos, { new: true, runValidators: true }).populate("actividades");
     if (!atractivo) return NextResponse.json({ error: "Atractivo no encontrado." }, { status: 404 });
     return NextResponse.json({ mensaje: "Atractivo actualizado correctamente.", atractivo }, { status: 200 });
   } catch {

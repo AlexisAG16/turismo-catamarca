@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 const ITINERARIO_KEY = "itinerario";
+const IMAGEN_FALLBACK = "https://placehold.co/900x600?text=Catamarca";
 
 function leerItinerarioSerializado() {
   if (typeof window === "undefined") return "[]";
@@ -54,6 +55,11 @@ function obtenerYouTubeEmbedUrl(url) {
     }
 
     if (parsedUrl.hostname.includes("youtube.com")) {
+      if (parsedUrl.pathname.startsWith("/live/")) {
+        const videoId = parsedUrl.pathname.replace("/live/", "");
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+      }
+
       const videoId = parsedUrl.searchParams.get("v");
       return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
     }
@@ -66,11 +72,13 @@ function obtenerYouTubeEmbedUrl(url) {
 
 export default function CardAtractivo({
   atractivo,
+  detalleHref,
   onToggleItinerario,
   onToast,
 }) {
   const [modalActivo, setModalActivo] = useState(null);
   const [guardandoItinerario, setGuardandoItinerario] = useState(false);
+  const [imagenFallidaUrl, setImagenFallidaUrl] = useState("");
   const [usuario, setUsuario] = useState(() => leerUsuarioLocal());
   const itinerarioSerializado = useSyncExternalStore(
     suscribirItinerario,
@@ -104,8 +112,9 @@ export default function CardAtractivo({
     googleMapsUrl = "",
   } = atractivo || {};
 
+  const imagenOriginalUrl = imagen?.url || IMAGEN_FALLBACK;
   const imagenUrl =
-    imagen?.url || "https://placehold.co/900x600?text=Catamarca";
+    imagenFallidaUrl === imagenOriginalUrl ? IMAGEN_FALLBACK : imagenOriginalUrl;
   const descripcionCorta =
     descripcion.length > 145 ? `${descripcion.slice(0, 142).trim()}...` : descripcion;
   const youtubeEmbedUrl = useMemo(
@@ -126,6 +135,7 @@ export default function CardAtractivo({
   const puedeAbrirMapa = Boolean(googleMapsUrl);
   const puedeAbrirVideo = Boolean(youtubeEmbedUrl);
   const puedeGuardarItinerario = usuario?.rol === "usuario";
+  const enlaceDetalle = detalleHref || `/atractivos/${_id}`;
 
   async function alternarItinerario() {
     if (!_id || typeof window === "undefined") return;
@@ -177,7 +187,7 @@ export default function CardAtractivo({
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-      <Link href={`/atractivos/${_id}`} className="relative aspect-4/3 w-full overflow-hidden bg-zinc-100">
+      <Link href={enlaceDetalle} className="relative aspect-4/3 w-full overflow-hidden bg-zinc-100">
         <Image
           src={imagenUrl}
           alt={nombre}
@@ -186,6 +196,7 @@ export default function CardAtractivo({
           className="object-cover transition hover:scale-105"
           loading="lazy"
           unoptimized
+          onError={() => setImagenFallidaUrl(imagenOriginalUrl)}
         />
         <span className="absolute left-3 top-3 rounded-md bg-white/95 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-800 shadow-sm">
           {departamento}
@@ -194,7 +205,7 @@ export default function CardAtractivo({
 
       <div className="flex flex-1 flex-col gap-4 p-4">
         <div className="space-y-2">
-          <Link href={`/atractivos/${_id}`} className="block text-xl font-bold leading-tight text-zinc-950 hover:text-emerald-700">
+          <Link href={enlaceDetalle} className="block text-xl font-bold leading-tight text-zinc-950 hover:text-emerald-700">
             {nombre}
           </Link>
           <p className="min-h-16 text-sm leading-6 text-zinc-600">

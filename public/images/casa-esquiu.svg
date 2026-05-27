@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-label="Casa Natal de Fray Mamerto Esquiu">
+  <rect width="900" height="600" fill="#d7e6ec"/>
+  <path d="M0 395c141-58 277-50 398-25 124 26 213 41 334-19 55-27 112-41 168-31v280H0z" fill="#73986a"/>
+  <rect x="210" y="255" width="480" height="220" fill="#c89b67"/>
+  <path d="M180 255h540l-80-82H260z" fill="#7b4630"/>
+  <rect x="270" y="330" width="80" height="90" fill="#4a3328"/>
+  <rect x="410" y="330" width="80" height="90" fill="#4a3328"/>
+  <rect x="550" y="330" width="80" height="90" fill="#4a3328"/>
+  <path d="M445 188v-70h28v70h68v27h-68v70h-28v-70h-68v-27z" fill="#ffffff"/>
+  <text x="450" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#ffffff">Casa Natal de Fray Mamerto Esquiu</text>
+</svg>

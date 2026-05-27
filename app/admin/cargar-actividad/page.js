@@ -37,7 +37,7 @@ export default function CargarActividadPage() {
           return;
         }
 
-        const atractivosResponse = await fetch("/api/atractivos", {
+        const atractivosResponse = await fetch("/api/atractivos?limit=100", {
           cache: "no-store",
         });
         const atractivosData = await atractivosResponse.json();

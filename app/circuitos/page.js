@@ -16,6 +16,7 @@ export default function CircuitosPage() {
   const [esAdmin, setEsAdmin] = useState(false);
   const [estaLogueado, setEstaLogueado] = useState(false);
   const [circuitoEditando, setCircuitoEditando] = useState(null);
+  const [atractivos, setAtractivos] = useState([]);
   const [toast, setToast] = useState({ mensaje: "", tipo: "success" });
 
   useEffect(() => {
@@ -66,8 +67,22 @@ export default function CircuitosPage() {
       }
     }
 
+    async function cargarAtractivos() {
+      try {
+        const response = await fetch("/api/atractivos?limit=100", { cache: "no-store" });
+        const data = await response.json();
+
+        if (activo && response.ok) {
+          setAtractivos(Array.isArray(data.atractivos) ? data.atractivos : []);
+        }
+      } catch {
+        if (activo) setAtractivos([]);
+      }
+    }
+
     verificarSesion();
     cargarCircuitos();
+    cargarAtractivos();
 
     return () => {
       activo = false;
@@ -117,7 +132,11 @@ export default function CircuitosPage() {
     const response = await fetch(`/api/circuitos/${circuitoEditando._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(circuitoEditando),
+      body: JSON.stringify({
+        nombre: circuitoEditando.nombre,
+        descripcion: circuitoEditando.descripcion,
+        atractivoIds: circuitoEditando.atractivoIds || [],
+      }),
     });
     const data = await response.json();
     if (!response.ok) {
@@ -131,6 +150,24 @@ export default function CircuitosPage() {
     setToast({ mensaje: "Circuito actualizado correctamente.", tipo: "success" });
     router.push("/circuitos");
     router.refresh();
+  }
+
+  function abrirEdicionCircuito(circuito) {
+    setCircuitoEditando({
+      ...circuito,
+      atractivoIds: Array.isArray(circuito.atractivos)
+        ? circuito.atractivos.map((atractivo) => atractivo._id)
+        : [],
+    });
+  }
+
+  function alternarAtractivoEdicion(id) {
+    setCircuitoEditando((valor) => ({
+      ...valor,
+      atractivoIds: valor.atractivoIds.includes(id)
+        ? valor.atractivoIds.filter((atractivoId) => atractivoId !== id)
+        : [...valor.atractivoIds, id],
+    }));
   }
 
   return (
@@ -208,23 +245,48 @@ export default function CircuitosPage() {
           )}
 
           {!cargando && !error && circuitos.length > 0 && (
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-4">
               {circuitos.map((circuito) => (
                 <article
                   key={circuito._id}
-                  className="flex h-full flex-col rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg"
+                  className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md"
                 >
-                  <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-                    {circuito.nombre}
-                  </h2>
-                  <p className="mt-3 flex-1 text-sm leading-6 text-zinc-600">
-                    {circuito.descripcion || "Region turistica de Catamarca con atractivos para descubrir y combinar en tu recorrido."}
-                  </p>
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+                        {circuito.nombre}
+                      </h2>
+                      <p className="mt-3 text-sm leading-6 text-zinc-600">
+                        {circuito.descripcion || "Region turistica de Catamarca con atractivos para descubrir y combinar en tu recorrido."}
+                      </p>
+                      <div className="mt-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                          Atractivos del circuito
+                        </p>
+                        {Array.isArray(circuito.atractivos) && circuito.atractivos.length > 0 ? (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {circuito.atractivos.map((atractivo) => (
+                              <span key={atractivo._id} className="rounded-md bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800">
+                                {atractivo.nombre}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-sm text-zinc-500">
+                            Todavia no hay atractivos asociados a este circuito.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="w-fit rounded-md border border-zinc-200 px-3 py-1 text-sm font-semibold text-zinc-700">
+                      {circuito.atractivos?.length || 0} atractivos
+                    </span>
+                  </div>
                   {esAdmin && (
                     <div className="mt-5 flex gap-2">
                       <button
                         type="button"
-                        onClick={() => setCircuitoEditando(circuito)}
+                        onClick={() => abrirEdicionCircuito(circuito)}
                         className="rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
                       >
                         Editar
@@ -260,6 +322,25 @@ export default function CircuitosPage() {
                 className="mt-3 min-h-28 w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 required
               />
+              <label className="mt-3 block text-sm font-medium text-zinc-800">
+                Atractivos asociados
+                <div className="mt-2 max-h-48 space-y-2 overflow-auto rounded-md border border-zinc-300 p-3">
+                  {atractivos.map((atractivo) => (
+                    <label key={atractivo._id} className="flex items-start gap-2 text-sm text-zinc-700">
+                      <input
+                        type="checkbox"
+                        checked={circuitoEditando.atractivoIds.includes(atractivo._id)}
+                        onChange={() => alternarAtractivoEdicion(atractivo._id)}
+                        className="mt-1"
+                      />
+                      <span>
+                        <span className="block font-medium text-zinc-900">{atractivo.nombre}</span>
+                        <span className="text-xs text-zinc-500">{atractivo.departamento}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </label>
               <div className="mt-5 flex justify-end gap-2">
                 <button type="button" onClick={() => setCircuitoEditando(null)} className="rounded-md border px-4 py-2 text-sm">
                   Cancelar
