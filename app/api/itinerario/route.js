@@ -93,19 +93,20 @@ export async function DELETE(request) {
     }
 
     const atractivoId = new URL(request.url).searchParams.get("atractivoId");
+    const actualizacion = atractivoId
+      ? { $pull: { itinerario: atractivoId } }
+      : { $set: { itinerario: [] } };
 
-    if (!mongoose.Types.ObjectId.isValid(atractivoId)) {
+    if (atractivoId && !mongoose.Types.ObjectId.isValid(atractivoId)) {
       return Response.json(
-        { mensaje: "ID de atractivo invalido." },
+        { mensaje: "ID de atractivo inválido." },
         { status: 400 }
       );
     }
 
     await connectDB();
 
-    await User.findByIdAndUpdate(auth.usuario.id, {
-      $pull: { itinerario: atractivoId },
-    });
+    await User.findByIdAndUpdate(auth.usuario.id, actualizacion);
 
     const usuario = await obtenerUsuarioConItinerario(auth.usuario.id);
 
@@ -115,7 +116,9 @@ export async function DELETE(request) {
 
     return Response.json(
       {
-        mensaje: "Atractivo quitado del itinerario.",
+        mensaje: atractivoId
+          ? "Atractivo quitado del itinerario."
+          : "Itinerario vaciado correctamente.",
         itinerario: usuario.itinerario || [],
       },
       { status: 200 }

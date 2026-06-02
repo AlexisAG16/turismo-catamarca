@@ -4,6 +4,11 @@ import connectDB from "@/lib/mongodb";
 import Circuito from "@/models/Circuito";
 import Atractivo from "@/models/Atractivo";
 import mongoose from "mongoose";
+import {
+  crearRegexNombreExacto,
+  respuestaValidacion,
+  validarTexto,
+} from "@/lib/serverValidation";
 
 export const runtime = "nodejs";
 
@@ -44,6 +49,19 @@ function normalizarCircuito(body = {}) {
   };
 }
 
+function validarDatosCircuito(datos) {
+  const errores = [];
+  validarTexto(errores, "nombre", datos.nombre, { min: 3, max: 100 });
+  validarTexto(errores, "descripcion", datos.descripcion, { min: 20, max: 1200 });
+  return errores;
+}
+
+async function validarAtractivosExistentes(ids) {
+  if (ids.length === 0) return true;
+  const total = await Atractivo.countDocuments({ _id: { $in: ids } });
+  return total === ids.length;
+}
+
 export async function GET() {
   try {
     await connectDB();
@@ -72,15 +90,26 @@ export async function POST(request) {
   const body = await request.json().catch(() => null);
   const datos = normalizarCircuito(body);
 
-  if (!datos.nombre || !datos.descripcion) {
-    return NextResponse.json(
-      { error: "El nombre y la descripcion son obligatorios." },
-      { status: 400 }
-    );
-  }
+  const errores = validarDatosCircuito(datos);
+  if (errores.length > 0) return respuestaValidacion(NextResponse, errores);
 
   try {
     await connectDB();
+
+    const existente = await Circuito.findOne({
+      nombre: crearRegexNombreExacto(datos.nombre),
+    }).select("_id");
+    if (existente) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "nombre", mensaje: "Ya existe un circuito con ese nombre." },
+      ]);
+    }
+
+    if (!(await validarAtractivosExistentes(datos.atractivoIds))) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "atractivoIds", mensaje: "Uno o más atractivos asociados no existen." },
+      ]);
+    }
 
     const circuito = await Circuito.create({
       nombre: datos.nombre,
@@ -136,14 +165,26 @@ export async function PUT(request) {
     const body = await request.json().catch(() => null);
     const datos = normalizarCircuito(body);
 
-    if (!datos.nombre || !datos.descripcion) {
-      return NextResponse.json(
-        { error: "El nombre y la descripcion son obligatorios." },
-        { status: 400 }
-      );
-    }
+    const errores = validarDatosCircuito(datos);
+    if (errores.length > 0) return respuestaValidacion(NextResponse, errores);
 
     await connectDB();
+
+    const existente = await Circuito.findOne({
+      _id: { $ne: id },
+      nombre: crearRegexNombreExacto(datos.nombre),
+    }).select("_id");
+    if (existente) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "nombre", mensaje: "Ya existe un circuito con ese nombre." },
+      ]);
+    }
+
+    if (!(await validarAtractivosExistentes(datos.atractivoIds))) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "atractivoIds", mensaje: "Uno o más atractivos asociados no existen." },
+      ]);
+    }
 
     const circuito = await Circuito.findByIdAndUpdate(id, {
       nombre: datos.nombre,

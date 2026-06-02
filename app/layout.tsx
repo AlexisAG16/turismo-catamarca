@@ -14,8 +14,33 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Turismo Catamarca",
-  description: "Plataforma de turismo inteligente para Catamarca",
+  metadataBase: new URL("https://turismo-catamarca.vercel.app"),
+  title: {
+    default: "Turismo Catamarca",
+    template: "%s | Turismo Catamarca",
+  },
+  description:
+    "Explorá atractivos, circuitos, actividades e itinerarios turísticos de Catamarca.",
+  keywords: [
+    "Catamarca",
+    "turismo",
+    "atractivos turísticos",
+    "circuitos turísticos",
+    "itinerario",
+    "Argentina",
+  ],
+  openGraph: {
+    title: "Turismo Catamarca",
+    description:
+      "Atractivos, circuitos, actividades e itinerarios para recorrer Catamarca.",
+    type: "website",
+    locale: "es_AR",
+    siteName: "Turismo Catamarca",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -25,7 +50,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

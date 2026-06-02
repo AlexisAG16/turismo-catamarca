@@ -70,9 +70,18 @@ function obtenerYouTubeEmbedUrl(url) {
   }
 }
 
+function IconoFavorito({ className = "h-4 w-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+    </svg>
+  );
+}
+
 export default function CardAtractivo({
   atractivo,
   detalleHref,
+  adminActions,
   onToggleItinerario,
   onToast,
 }) {
@@ -226,7 +235,11 @@ export default function CardAtractivo({
               } disabled:cursor-not-allowed disabled:opacity-60`}
               aria-pressed={estaEnItinerario}
             >
-              <span aria-hidden="true">{estaEnItinerario ? "*" : "+"}</span>
+              {estaEnItinerario ? (
+                <IconoFavorito className="h-4 w-4" />
+              ) : (
+                <span aria-hidden="true" className="text-base leading-none">+</span>
+              )}
               {guardandoItinerario
                 ? "Guardando..."
                 : estaEnItinerario
@@ -240,7 +253,7 @@ export default function CardAtractivo({
               href="/login?aviso=itinerario"
               className="inline-flex min-h-11 flex-1 items-center justify-center rounded-md border border-emerald-700 px-4 py-2 text-center text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
             >
-              Inicia sesion para guardar
+              Iniciá sesión para guardar
             </Link>
           )}
 
@@ -263,6 +276,25 @@ export default function CardAtractivo({
             </button>
           </div>
         </div>
+
+        {adminActions && (
+          <div className="grid grid-cols-2 gap-2 border-t border-zinc-200 pt-3">
+            <button
+              type="button"
+              onClick={adminActions.onEdit}
+              className="min-h-10 rounded-md border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              onClick={adminActions.onDelete}
+              className="min-h-10 rounded-md border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+            >
+              Borrar
+            </button>
+          </div>
+        )}
       </div>
 
       {modalActivo && (
@@ -272,7 +304,7 @@ export default function CardAtractivo({
               <div>
                 <h4 className="text-base font-bold text-zinc-950">{nombre}</h4>
                 <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  {modalActivo === "mapa" ? "Ubicacion interactiva" : "Video de muestra"}
+                  {modalActivo === "mapa" ? "Ubicación interactiva" : "Video de muestra"}
                 </p>
               </div>
               <button

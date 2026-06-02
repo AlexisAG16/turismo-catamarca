@@ -4,6 +4,12 @@ import { verificarAdmin } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Atractivo from "@/models/Atractivo";
 import "@/models/Actividad";
+import {
+  crearRegexNombreExacto,
+  respuestaValidacion,
+  validarTexto,
+  validarUrl,
+} from "@/lib/serverValidation";
 
 export const runtime = "nodejs";
 
@@ -36,6 +42,17 @@ function datosAtractivo(body = {}) {
   };
 }
 
+function validarDatosAtractivo(datos) {
+  const errores = [];
+  validarTexto(errores, "nombre", datos.nombre, { min: 3, max: 90 });
+  validarTexto(errores, "descripcion", datos.descripcion, { min: 20, max: 1200 });
+  validarTexto(errores, "departamento", datos.departamento, { min: 3, max: 80 });
+  validarUrl(errores, "imagen.url", datos.imagen.url, { requerido: true });
+  validarUrl(errores, "youtubeUrl", datos.youtubeUrl);
+  validarUrl(errores, "googleMapsUrl", datos.googleMapsUrl);
+  return errores;
+}
+
 export async function GET(_request, { params }) {
   const { id } = await params;
 
@@ -65,11 +82,21 @@ export async function PUT(request, { params }) {
 
   const body = await request.json().catch(() => null);
   const datos = datosAtractivo(body);
-  if (!datos.nombre || !datos.descripcion || !datos.departamento || !datos.imagen.url) {
-    return NextResponse.json({ error: "El nombre, descripcion, departamento e imagen son obligatorios." }, { status: 400 });
-  }
+  const errores = validarDatosAtractivo(datos);
+  if (errores.length > 0) return respuestaValidacion(NextResponse, errores);
+
   try {
     await connectDB();
+    const existente = await Atractivo.findOne({
+      _id: { $ne: id },
+      nombre: crearRegexNombreExacto(datos.nombre),
+    }).select("_id");
+    if (existente) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "nombre", mensaje: "Ya existe un atractivo con ese nombre." },
+      ]);
+    }
+
     const atractivo = await Atractivo.findByIdAndUpdate(id, datos, { new: true, runValidators: true }).populate("actividades");
     if (!atractivo) return NextResponse.json({ error: "Atractivo no encontrado." }, { status: 404 });
     return NextResponse.json({ mensaje: "Atractivo actualizado correctamente.", atractivo }, { status: 200 });

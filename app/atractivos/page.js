@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
@@ -135,7 +135,7 @@ function AtractivosContenido() {
         }
       } catch (err) {
         if (activo) {
-          setError(err.message || "Ocurrio un error al cargar los atractivos.");
+          setError(err.message || "Ocurrió un error al cargar los atractivos.");
         }
       } finally {
         if (activo) {
@@ -154,13 +154,13 @@ function AtractivosContenido() {
   // Confirma y ejecuta el borrado seguro de un atractivo desde la API protegida.
   async function borrarAtractivo(id) {
     const confirmacion = await Swal.fire({
-      title: "Confirmar eliminacion",
+      title: "Confirmar eliminación",
       text: "¿Estás seguro de que deseas eliminar este registro?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#059669",
       cancelButtonColor: "#dc2626",
-      confirmButtonText: "Si, eliminar",
+      confirmButtonText: "Sí, eliminar",
       cancelButtonText: "Cancelar",
     });
 
@@ -270,6 +270,60 @@ function AtractivosContenido() {
     return `/atractivos/${id}?volver=${encodeURIComponent(volver)}`;
   }
 
+  function limpiarFiltros() {
+    setBusquedaNombre("");
+    setDepartamentoSeleccionado("");
+    setCircuitoSeleccionado("");
+    setPaginaActual(1);
+    router.replace("/atractivos", { scroll: false });
+  }
+
+  function obtenerCircuitoSeleccionado() {
+    return circuitos.find((circuito) => circuito._id === circuitoSeleccionado);
+  }
+
+  function obtenerMensajeVacio() {
+    const circuito = obtenerCircuitoSeleccionado();
+
+    if (departamentoSeleccionado && circuitoSeleccionado) {
+      return {
+        titulo: `No encontramos atractivos en ${departamentoSeleccionado} para este circuito`,
+        descripcion:
+          "Probá limpiar filtros o elegir otro circuito para ampliar los resultados.",
+      };
+    }
+
+    if (departamentoSeleccionado) {
+      return {
+        titulo: `No encontramos atractivos en ${departamentoSeleccionado}`,
+        descripcion:
+          "Todavía no hay atractivos cargados para ese departamento o no coinciden con la búsqueda actual.",
+      };
+    }
+
+    if (circuitoSeleccionado) {
+      return {
+        titulo: `No encontramos atractivos para ${circuito?.nombre || "este circuito"}`,
+        descripcion:
+          "El circuito puede no tener atractivos asociados o los filtros activos están limitando la búsqueda.",
+      };
+    }
+
+    if (busquedaNombre.trim()) {
+      return {
+        titulo: `No encontramos atractivos para "${busquedaNombre.trim()}"`,
+        descripcion:
+          "Revisá la escritura o probá con otro nombre, departamento o palabra clave.",
+      };
+    }
+
+    return {
+      titulo: "No hay atractivos para mostrar",
+      descripcion:
+        "Cuando se agregue contenido turístico, lo vas a ver en esta sección.",
+    };
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-950">
       <Navbar />
@@ -281,10 +335,10 @@ function AtractivosContenido() {
             Explorar destinos
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            Atractivos Turisticos de Catamarca
+            Atractivos Turísticos de Catamarca
           </h1>
           <p className="mt-4 text-base leading-7 text-zinc-600">
-            Descubri paisajes, pueblos, rutas escenicas y experiencias para sumar a tu itinerario personal.
+            Descubrí paisajes, pueblos, rutas escénicas y experiencias para sumar a tu itinerario personal.
           </p>
           {esAdmin && (
             <Link
@@ -367,11 +421,22 @@ function AtractivosContenido() {
           )}
 
           {!cargando && !error && paginacion.totalRegistros === 0 && (
-            <div className="rounded-lg border border-zinc-200 bg-white p-6 text-center">
-              <h2 className="text-lg font-semibold">No hay atractivos para mostrar</h2>
-              <p className="mt-2 text-sm text-zinc-600">
-                Cuando se agregue contenido turistico o ajustes los filtros, lo vas a ver en esta seccion.
+            <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
+              <h2 className="text-xl font-semibold text-zinc-950">
+                {obtenerMensajeVacio().titulo}
+              </h2>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+                {obtenerMensajeVacio().descripcion}
               </p>
+              {(busquedaNombre.trim() || departamentoSeleccionado || circuitoSeleccionado) && (
+                <button
+                  type="button"
+                  onClick={limpiarFiltros}
+                  className="mt-5 rounded-md border border-emerald-700 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
+                >
+                  Limpiar filtros
+                </button>
+              )}
             </div>
           )}
 
@@ -386,32 +451,22 @@ function AtractivosContenido() {
                       <CardAtractivo
                         atractivo={atractivo}
                         detalleHref={construirHrefDetalle(atractivo._id)}
+                        adminActions={
+                          esAdmin
+                            ? {
+                                onEdit: () => abrirEdicionAtractivo(atractivo),
+                                onDelete: () => borrarAtractivo(atractivo._id),
+                              }
+                            : null
+                        }
                       />
-                      {esAdmin && (
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => abrirEdicionAtractivo(atractivo)}
-                            className="mr-2 rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => borrarAtractivo(atractivo._id)}
-                            className="rounded-md bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-                          >
-                            Borrar
-                          </button>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
 
                 <nav className="mt-8 flex flex-col gap-3 border-t border-zinc-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm font-medium text-zinc-600">
-                    Pagina {paginacion.pagina} de {paginacion.totalPaginas} · {paginacion.totalRegistros} atractivos
+                    Página {paginacion.pagina} de {paginacion.totalPaginas} · {paginacion.totalRegistros} atractivos
                   </p>
                   <div className="grid grid-cols-2 gap-2 sm:flex">
                     <button
@@ -444,7 +499,7 @@ function AtractivosContenido() {
                       disabled={!paginacion.tieneSiguiente}
                       className="min-h-10 rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-45"
                     >
-                      Ultima
+                      Última
                     </button>
                   </div>
                 </nav>
@@ -452,11 +507,29 @@ function AtractivosContenido() {
             ) : (
               <div className="rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-sm">
                 <h2 className="text-lg font-semibold text-zinc-950">
-                  No se encontraron atractivos en esta pagina.
+                  No se encontraron atractivos en esta página.
                 </h2>
                 <p className="mt-2 text-sm text-zinc-600">
-                  Volve a la primera pagina o ajusta los filtros para ampliar la busqueda.
+                  Volvé a la primera página o ajustá los filtros para ampliar la búsqueda.
                 </p>
+                <div className="mt-5 flex flex-wrap justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => irAPagina(1)}
+                    className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100"
+                  >
+                    Ir a la primera página
+                  </button>
+                  {(busquedaNombre.trim() || departamentoSeleccionado || circuitoSeleccionado) && (
+                    <button
+                      type="button"
+                      onClick={limpiarFiltros}
+                      className="rounded-md border border-emerald-700 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
+                    >
+                      Limpiar filtros
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
         </section>
@@ -491,7 +564,7 @@ function AtractivosContenido() {
                 </label>
               ))}
               <label className="mt-3 block text-sm font-medium text-zinc-800">
-                Descripcion
+                Descripción
                 <textarea
                   value={atractivoEditando.descripcion || ""}
                   onChange={(event) =>

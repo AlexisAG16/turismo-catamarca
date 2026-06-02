@@ -9,6 +9,7 @@ import Toast from "@/components/Toast";
 import LoadingState from "@/components/LoadingState";
 
 const ITINERARIO_KEY = "itinerario";
+const IMAGEN_FALLBACK = "https://placehold.co/1400x700?text=Catamarca";
 
 function obtenerYouTubeEmbedUrl(url) {
   if (!url || typeof url !== "string") return "";
@@ -59,7 +60,7 @@ function obtenerGoogleMapsEmbedUrl(url, nombre, departamento) {
   }
 
   const busqueda = encodeURIComponent(
-    `${nombre || "Atractivo turistico"} ${departamento || ""} Catamarca`
+    `${nombre || "Atractivo turístico"} ${departamento || ""} Catamarca`
   );
 
   return `https://maps.google.com/maps?q=${busqueda}&z=14&output=embed`;
@@ -72,6 +73,7 @@ export default function DetalleAtractivoPage() {
   const [atractivo, setAtractivo] = useState(null);
   const [actividades, setActividades] = useState([]);
   const [usuario, setUsuario] = useState(null);
+  const [imagenFallidaUrl, setImagenFallidaUrl] = useState("");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ mensaje: "", tipo: "success" });
@@ -175,7 +177,7 @@ export default function DetalleAtractivoPage() {
         <main className="mx-auto w-full max-w-7xl px-5 py-10">
           <LoadingState
             titulo="Cargando detalle del atractivo"
-            mensaje="Estamos preparando la informacion completa, multimedia y actividades asociadas."
+            mensaje="Estamos preparando la información completa, multimedia y actividades asociadas."
           />
         </main>
       </div>
@@ -215,11 +217,16 @@ export default function DetalleAtractivoPage() {
         <section className="overflow-hidden rounded-xl bg-white shadow-sm">
           <div className="relative min-h-[360px]">
             <Image
-              src={atractivo.imagen?.url || "https://placehold.co/1400x700?text=Catamarca"}
+              src={
+                imagenFallidaUrl === atractivo.imagen?.url
+                  ? IMAGEN_FALLBACK
+                  : atractivo.imagen?.url || IMAGEN_FALLBACK
+              }
               alt={atractivo.nombre}
               fill
               priority
               unoptimized
+              onError={() => setImagenFallidaUrl(atractivo.imagen?.url || "")}
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
@@ -244,7 +251,7 @@ export default function DetalleAtractivoPage() {
 
           <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[1fr_0.9fr]">
             <div>
-              <h2 className="text-2xl font-semibold">Descripcion</h2>
+              <h2 className="text-2xl font-semibold">Descripción</h2>
               <p className="mt-3 leading-7 text-zinc-600">
                 {atractivo.descripcion}
               </p>
@@ -255,7 +262,7 @@ export default function DetalleAtractivoPage() {
                 <p className="mt-1 text-sm text-zinc-600">
                   {actividades.length > 0
                     ? actividades.map((actividad) => actividad.nombre).join(", ")
-                    : "Todavia no hay actividades asociadas a este atractivo."}
+                    : "Todavía no hay actividades asociadas a este atractivo."}
                 </p>
               </div>
             </div>
@@ -265,7 +272,7 @@ export default function DetalleAtractivoPage() {
                 <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 shadow-sm">
                   <div className="border-b border-zinc-200 bg-white px-4 py-3">
                     <h2 className="text-base font-semibold text-zinc-950">
-                      Ubicacion
+                      Ubicación
                     </h2>
                     <p className="mt-1 text-xs text-zinc-500">
                       Mapa interactivo del atractivo.
@@ -273,7 +280,7 @@ export default function DetalleAtractivoPage() {
                   </div>
                   <iframe
                     src={googleMapsEmbedUrl}
-                    title={`Ubicacion de ${atractivo.nombre}`}
+                    title={`Ubicación de ${atractivo.nombre}`}
                     className="aspect-video w-full"
                     loading="lazy"
                     allowFullScreen
@@ -313,7 +320,7 @@ export default function DetalleAtractivoPage() {
           </h2>
           {actividades.length === 0 ? (
             <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-              Todavia no hay actividades cargadas para este atractivo.
+              Todavía no hay actividades cargadas para este atractivo.
             </div>
           ) : (
             <div className="mt-5 space-y-4">

@@ -253,9 +253,12 @@ export default function CircuitosPage() {
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0 flex-1">
-                      <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+                      <Link
+                        href={`/circuitos/${circuito._id}`}
+                        className="block text-2xl font-semibold tracking-tight text-zinc-950 transition hover:text-emerald-700"
+                      >
                         {circuito.nombre}
-                      </h2>
+                      </Link>
                       <p className="mt-3 text-sm leading-6 text-zinc-600">
                         {circuito.descripcion || "Region turistica de Catamarca con atractivos para descubrir y combinar en tu recorrido."}
                       </p>
@@ -281,6 +284,14 @@ export default function CircuitosPage() {
                     <span className="w-fit rounded-md border border-zinc-200 px-3 py-1 text-sm font-semibold text-zinc-700">
                       {circuito.atractivos?.length || 0} atractivos
                     </span>
+                  </div>
+                  <div className="mt-5">
+                    <Link
+                      href={`/circuitos/${circuito._id}`}
+                      className="inline-flex rounded-md border border-emerald-700 px-3 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
+                    >
+                      Ver detalle
+                    </Link>
                   </div>
                   {esAdmin && (
                     <div className="mt-5 flex gap-2">

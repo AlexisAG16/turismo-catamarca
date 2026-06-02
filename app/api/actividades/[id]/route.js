@@ -3,6 +3,12 @@ import mongoose from "mongoose";
 import { verificarAdmin } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Actividad from "@/models/Actividad";
+import Atractivo from "@/models/Atractivo";
+import {
+  crearRegexNombreExacto,
+  respuestaValidacion,
+  validarTexto,
+} from "@/lib/serverValidation";
 
 export const runtime = "nodejs";
 
@@ -21,6 +27,25 @@ function datosActividad(body = {}) {
   };
 }
 
+function validarDatosActividad(datos) {
+  const errores = [];
+  validarTexto(errores, "nombre", datos.nombre, { min: 3, max: 100 });
+  validarTexto(errores, "descripcion", datos.descripcion, { min: 20, max: 1000 });
+  validarTexto(errores, "duracionEstimada", datos.duracionEstimada, {
+    requerido: false,
+    min: 2,
+    max: 80,
+  });
+
+  if (!datos.atractivo) {
+    errores.push({ campo: "atractivo", mensaje: "El atractivo es obligatorio." });
+  } else if (!mongoose.Types.ObjectId.isValid(datos.atractivo)) {
+    errores.push({ campo: "atractivo", mensaje: "El atractivo debe ser un ID válido de MongoDB." });
+  }
+
+  return errores;
+}
+
 // Actualiza una actividad puntual y mantiene su relacion con un atractivo valido.
 export async function PUT(request, { params }) {
   const bloqueo = noAutorizado(request);
@@ -33,15 +58,29 @@ export async function PUT(request, { params }) {
 
   const body = await request.json().catch(() => null);
   const datos = datosActividad(body);
-  if (!datos.nombre || !datos.descripcion || !datos.atractivo) {
-    return NextResponse.json({ error: "El nombre, descripcion y atractivo son obligatorios." }, { status: 400 });
-  }
-  if (!mongoose.Types.ObjectId.isValid(datos.atractivo)) {
-    return NextResponse.json({ error: "El atractivo debe ser un ID valido de MongoDB." }, { status: 400 });
-  }
+  const errores = validarDatosActividad(datos);
+  if (errores.length > 0) return respuestaValidacion(NextResponse, errores);
 
   try {
     await connectDB();
+    const atractivoExiste = await Atractivo.exists({ _id: datos.atractivo });
+    if (!atractivoExiste) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "atractivo", mensaje: "El atractivo asociado no existe." },
+      ]);
+    }
+
+    const existente = await Actividad.findOne({
+      _id: { $ne: id },
+      nombre: crearRegexNombreExacto(datos.nombre),
+      atractivo: datos.atractivo,
+    }).select("_id");
+    if (existente) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "nombre", mensaje: "Ese atractivo ya tiene una actividad con ese nombre." },
+      ]);
+    }
+
     const actividad = await Actividad.findByIdAndUpdate(id, datos, { new: true, runValidators: true }).populate("atractivo");
     if (!actividad) return NextResponse.json({ error: "Actividad no encontrada." }, { status: 404 });
     return NextResponse.json({ mensaje: "Actividad actualizada correctamente.", actividad }, { status: 200 });

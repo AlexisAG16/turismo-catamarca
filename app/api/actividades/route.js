@@ -3,6 +3,12 @@ import mongoose from "mongoose";
 import { verificarAdmin } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Actividad from "@/models/Actividad";
+import Atractivo from "@/models/Atractivo";
+import {
+  crearRegexNombreExacto,
+  respuestaValidacion,
+  validarTexto,
+} from "@/lib/serverValidation";
 
 export const runtime = "nodejs";
 
@@ -26,8 +32,7 @@ function normalizarActividad(body = {}) {
       : typeof body?.atractivo === "string"
         ? body.atractivo.trim()
         : "";
-  const costoNumerico = Number(body?.costoAproximado);
-  const datos = {
+  return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
     descripcion:
       typeof body?.descripcion === "string" ? body.descripcion.trim() : "",
@@ -37,16 +42,25 @@ function normalizarActividad(body = {}) {
         : "",
     atractivo: atractivoId,
   };
+}
 
-  if (
-    body?.costoAproximado !== undefined &&
-    body?.costoAproximado !== null &&
-    body?.costoAproximado !== ""
-  ) {
-    datos.costoAproximado = costoNumerico;
+function validarDatosActividad(datos) {
+  const errores = [];
+  validarTexto(errores, "nombre", datos.nombre, { min: 3, max: 100 });
+  validarTexto(errores, "descripcion", datos.descripcion, { min: 20, max: 1000 });
+  validarTexto(errores, "duracionEstimada", datos.duracionEstimada, {
+    requerido: false,
+    min: 2,
+    max: 80,
+  });
+
+  if (!datos.atractivo) {
+    errores.push({ campo: "atractivo", mensaje: "El atractivo es obligatorio." });
+  } else if (!mongoose.Types.ObjectId.isValid(datos.atractivo)) {
+    errores.push({ campo: "atractivo", mensaje: "El atractivo debe ser un ID válido de MongoDB." });
   }
 
-  return datos;
+  return errores;
 }
 
 export async function GET(request) {
@@ -91,32 +105,28 @@ export async function POST(request) {
   const body = await request.json().catch(() => null);
   const datos = normalizarActividad(body);
 
-  if (!datos.nombre || !datos.descripcion || !datos.atractivo) {
-    return NextResponse.json(
-      { error: "El nombre, descripcion y atractivo son obligatorios." },
-      { status: 400 }
-    );
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(datos.atractivo)) {
-    return NextResponse.json(
-      { error: "El atractivo debe ser un ID valido de MongoDB." },
-      { status: 400 }
-    );
-  }
-
-  if (
-    datos.costoAproximado !== undefined &&
-    (!Number.isFinite(datos.costoAproximado) || datos.costoAproximado < 0)
-  ) {
-    return NextResponse.json(
-      { error: "El costo aproximado debe ser un numero mayor o igual a 0." },
-      { status: 400 }
-    );
-  }
+  const errores = validarDatosActividad(datos);
+  if (errores.length > 0) return respuestaValidacion(NextResponse, errores);
 
   try {
     await connectDB();
+
+    const atractivoExiste = await Atractivo.exists({ _id: datos.atractivo });
+    if (!atractivoExiste) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "atractivo", mensaje: "El atractivo asociado no existe." },
+      ]);
+    }
+
+    const existente = await Actividad.findOne({
+      nombre: crearRegexNombreExacto(datos.nombre),
+      atractivo: datos.atractivo,
+    }).select("_id");
+    if (existente) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "nombre", mensaje: "Ese atractivo ya tiene una actividad con ese nombre." },
+      ]);
+    }
 
     const actividadCreada = await Actividad.create(datos);
     const actividad = await Actividad.findById(actividadCreada._id).populate(
@@ -158,15 +168,28 @@ export async function PUT(request) {
 
     const body = await request.json().catch(() => null);
     const datos = normalizarActividad(body);
-
-    if (!mongoose.Types.ObjectId.isValid(datos.atractivo)) {
-      return NextResponse.json(
-        { error: "El atractivo debe ser un ID valido de MongoDB." },
-        { status: 400 }
-      );
-    }
+    const errores = validarDatosActividad(datos);
+    if (errores.length > 0) return respuestaValidacion(NextResponse, errores);
 
     await connectDB();
+
+    const atractivoExiste = await Atractivo.exists({ _id: datos.atractivo });
+    if (!atractivoExiste) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "atractivo", mensaje: "El atractivo asociado no existe." },
+      ]);
+    }
+
+    const existente = await Actividad.findOne({
+      _id: { $ne: id },
+      nombre: crearRegexNombreExacto(datos.nombre),
+      atractivo: datos.atractivo,
+    }).select("_id");
+    if (existente) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "nombre", mensaje: "Ese atractivo ya tiene una actividad con ese nombre." },
+      ]);
+    }
 
     const actividad = await Actividad.findByIdAndUpdate(id, datos, {
       new: true,

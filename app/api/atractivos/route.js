@@ -5,6 +5,12 @@ import connectDB from "@/lib/mongodb";
 import Atractivo from "@/models/Atractivo";
 import Circuito from "@/models/Circuito";
 import "@/models/Actividad";
+import {
+  crearRegexNombreExacto,
+  respuestaValidacion,
+  validarTexto,
+  validarUrl,
+} from "@/lib/serverValidation";
 
 export const runtime = "nodejs";
 
@@ -73,6 +79,21 @@ function escaparRegex(valor) {
   return valor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function quitarAcentos(valor) {
+  return valor.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function validarDatosAtractivo(datos) {
+  const errores = [];
+  validarTexto(errores, "nombre", datos.nombre, { min: 3, max: 90 });
+  validarTexto(errores, "descripcion", datos.descripcion, { min: 20, max: 1200 });
+  validarTexto(errores, "departamento", datos.departamento, { min: 3, max: 80 });
+  validarUrl(errores, "imagen.url", datos.imagen.url, { requerido: true });
+  validarUrl(errores, "youtubeUrl", datos.youtubeUrl);
+  validarUrl(errores, "googleMapsUrl", datos.googleMapsUrl);
+  return errores;
+}
+
 export async function GET(request) {
   try {
     const searchParams = new URL(request.url).searchParams;
@@ -91,7 +112,9 @@ export async function GET(request) {
     }
 
     if (departamento) {
-      filtros.departamento = departamento;
+      filtros.departamento = {
+        $in: Array.from(new Set([departamento, quitarAcentos(departamento)])),
+      };
     }
 
     await connectDB();
@@ -152,23 +175,20 @@ export async function POST(request) {
   const body = await request.json().catch(() => null);
   const datos = normalizarAtractivo(body);
 
-  if (
-    !datos.nombre ||
-    !datos.descripcion ||
-    !datos.departamento ||
-    !datos.imagen.url
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "El nombre, descripcion, departamento e imagen son obligatorios.",
-      },
-      { status: 400 }
-    );
-  }
+  const errores = validarDatosAtractivo(datos);
+  if (errores.length > 0) return respuestaValidacion(NextResponse, errores);
 
   try {
     await connectDB();
+
+    const existente = await Atractivo.findOne({
+      nombre: crearRegexNombreExacto(datos.nombre),
+    }).select("_id");
+    if (existente) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "nombre", mensaje: "Ya existe un atractivo con ese nombre." },
+      ]);
+    }
 
     const atractivoCreado = await Atractivo.create(datos);
     const atractivo = await Atractivo.findById(atractivoCreado._id).populate(
@@ -210,8 +230,20 @@ export async function PUT(request) {
 
     const body = await request.json().catch(() => null);
     const datos = normalizarAtractivo(body);
+    const errores = validarDatosAtractivo(datos);
+    if (errores.length > 0) return respuestaValidacion(NextResponse, errores);
 
     await connectDB();
+
+    const existente = await Atractivo.findOne({
+      _id: { $ne: id },
+      nombre: crearRegexNombreExacto(datos.nombre),
+    }).select("_id");
+    if (existente) {
+      return respuestaValidacion(NextResponse, [
+        { campo: "nombre", mensaje: "Ya existe un atractivo con ese nombre." },
+      ]);
+    }
 
     const atractivo = await Atractivo.findByIdAndUpdate(id, datos, {
       new: true,
