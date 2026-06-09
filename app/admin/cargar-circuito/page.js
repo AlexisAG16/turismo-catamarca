@@ -80,6 +80,10 @@ export default function CargarCircuitoPage() {
     return intentoEnviar && !formulario[nombreCampo].trim();
   }
 
+  function atractivosInvalidos() {
+    return intentoEnviar && formulario.atractivoIds.length === 0;
+  }
+
   function clasesCampo(nombreCampo) {
     return campoInvalido(nombreCampo)
       ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
@@ -93,6 +97,14 @@ export default function CargarCircuitoPage() {
 
     if (!formulario.nombre.trim() || !formulario.descripcion.trim()) {
       setToast({ mensaje: "Completa los campos obligatorios.", tipo: "error" });
+      return;
+    }
+
+    if (formulario.atractivoIds.length === 0) {
+      setToast({
+        mensaje: "Selecciona al menos un atractivo para el circuito.",
+        tipo: "error",
+      });
       return;
     }
 
@@ -110,7 +122,12 @@ export default function CargarCircuitoPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.mensaje || "No se pudo cargar el circuito.");
+        const detalle = Array.isArray(data.errores)
+          ? data.errores.map((item) => item.mensaje).join(" ")
+          : "";
+        throw new Error(
+          detalle || data.error || data.mensaje || "No se pudo cargar el circuito."
+        );
       }
 
       setToast({ mensaje: "Circuito guardado correctamente en la base de datos.", tipo: "success" });
@@ -193,7 +210,11 @@ export default function CargarCircuitoPage() {
 
           <label className="block text-sm font-medium text-zinc-800">
             Atractivos del circuito
-            <div className="mt-2 max-h-56 space-y-2 overflow-auto rounded-md border border-zinc-300 bg-white p-3">
+            <div
+              className={`mt-2 max-h-56 space-y-2 overflow-auto rounded-md border bg-white p-3 ${
+                atractivosInvalidos() ? "border-red-500" : "border-zinc-300"
+              }`}
+            >
               {atractivos.length === 0 ? (
                 <p className="text-sm text-zinc-500">
                   No hay atractivos disponibles para asociar.
@@ -215,6 +236,11 @@ export default function CargarCircuitoPage() {
                 ))
               )}
             </div>
+            {atractivosInvalidos() && (
+              <span className="mt-1 block text-xs font-medium text-red-600">
+                Selecciona al menos un atractivo
+              </span>
+            )}
           </label>
 
           <button

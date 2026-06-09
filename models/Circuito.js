@@ -9,14 +9,21 @@ const circuitoSchema = new mongoose.Schema(
     },
     descripcion: {
       type: String,
+      required: true,
       trim: true,
     },
-    atractivos: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Atractivo",
+    atractivos: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Atractivo",
+        },
+      ],
+      validate: {
+        validator: (atractivos) => Array.isArray(atractivos) && atractivos.length > 0,
+        message: "El circuito debe tener al menos un atractivo asociado.",
       },
-    ],
+    },
   },
   {
     collection: "circuitos",

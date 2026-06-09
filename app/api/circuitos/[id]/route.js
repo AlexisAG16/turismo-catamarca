@@ -19,12 +19,25 @@ function noAutorizado(request) {
 }
 
 function datosCircuito(body = {}) {
+  const atractivos = Array.isArray(body?.atractivoIds)
+    ? body.atractivoIds
+    : Array.isArray(body?.atractivos)
+      ? body.atractivos
+      : [];
+  const atractivoIds = atractivos
+    .map((atractivo) =>
+      typeof atractivo === "string"
+        ? atractivo
+        : typeof atractivo?._id === "string"
+          ? atractivo._id
+          : ""
+    )
+    .filter((atractivoId) => mongoose.Types.ObjectId.isValid(atractivoId));
+
   return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
     descripcion: typeof body?.descripcion === "string" ? body.descripcion.trim() : "",
-    atractivoIds: Array.isArray(body?.atractivoIds)
-      ? body.atractivoIds.filter((id) => mongoose.Types.ObjectId.isValid(id))
-      : [],
+    atractivoIds: Array.from(new Set(atractivoIds)),
   };
 }
 
@@ -32,11 +45,16 @@ function validarDatosCircuito(datos) {
   const errores = [];
   validarTexto(errores, "nombre", datos.nombre, { min: 3, max: 100 });
   validarTexto(errores, "descripcion", datos.descripcion, { min: 20, max: 1200 });
+  if (datos.atractivoIds.length === 0) {
+    errores.push({
+      campo: "atractivoIds",
+      mensaje: "Debes asociar al menos un atractivo al circuito.",
+    });
+  }
   return errores;
 }
 
 async function validarAtractivosExistentes(ids) {
-  if (ids.length === 0) return true;
   const total = await Atractivo.countDocuments({ _id: { $in: ids } });
   return total === ids.length;
 }
@@ -99,6 +117,11 @@ export async function PUT(request, { params }) {
       ]);
     }
 
+    const circuitoAnterior = await Circuito.findById(id).select("atractivos");
+    if (!circuitoAnterior) {
+      return NextResponse.json({ error: "Circuito no encontrado." }, { status: 404 });
+    }
+
     const circuito = await Circuito.findByIdAndUpdate(
       id,
       {
@@ -108,14 +131,17 @@ export async function PUT(request, { params }) {
       },
       { new: true, runValidators: true }
     );
-    if (!circuito) return NextResponse.json({ error: "Circuito no encontrado." }, { status: 404 });
-
-    if (datos.atractivoIds.length > 0) {
-      await Atractivo.updateMany(
-        { _id: { $in: datos.atractivoIds } },
-        { $set: { circuito: circuito._id } }
-      );
-    }
+    const retirados = circuitoAnterior.atractivos.filter(
+      (atractivoId) => !datos.atractivoIds.includes(atractivoId.toString())
+    );
+    await Atractivo.updateMany(
+      { _id: { $in: retirados }, circuito: circuito._id },
+      { $unset: { circuito: "" } }
+    );
+    await Atractivo.updateMany(
+      { _id: { $in: datos.atractivoIds } },
+      { $set: { circuito: circuito._id } }
+    );
 
     const circuitoActualizado = await Circuito.findById(circuito._id).populate(
       "atractivos",
@@ -145,6 +171,10 @@ export async function DELETE(request, { params }) {
     await connectDB();
     const circuito = await Circuito.findByIdAndDelete(id);
     if (!circuito) return NextResponse.json({ error: "Circuito no encontrado." }, { status: 404 });
+    await Atractivo.updateMany(
+      { circuito: circuito._id },
+      { $unset: { circuito: "" } }
+    );
     return NextResponse.json({ mensaje: "Circuito borrado correctamente." }, { status: 200 });
   } catch {
     return NextResponse.json({ error: "No se pudo borrar el circuito." }, { status: 500 });

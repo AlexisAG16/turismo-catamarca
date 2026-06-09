@@ -122,7 +122,12 @@ export default function CargarActividadPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.mensaje || "No se pudo cargar la actividad.");
+        const detalle = Array.isArray(data.errores)
+          ? data.errores.map((item) => item.mensaje).join(" ")
+          : "";
+        throw new Error(
+          detalle || data.error || data.mensaje || "No se pudo cargar la actividad."
+        );
       }
 
       setToast({ mensaje: "Actividad guardada correctamente en la base de datos.", tipo: "success" });

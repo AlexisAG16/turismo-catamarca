@@ -352,7 +352,7 @@ function AtractivosContenido() {
 
         <section className="mt-8">
           {!cargando && !error && (
-            <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl bg-gray-50 p-4 md:grid-cols-3">
+            <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl bg-gray-50 p-4 md:grid-cols-4">
               <label className="block text-sm font-medium text-zinc-800">
                 Buscar por nombre
                 <input
@@ -404,6 +404,16 @@ function AtractivosContenido() {
                   ))}
                 </select>
               </label>
+
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={limpiarFiltros}
+                  className="w-full rounded-md border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
             </div>
           )}
 
@@ -543,7 +553,6 @@ function AtractivosContenido() {
               <h2 className="text-xl font-semibold">Editar atractivo</h2>
               {[
                 ["nombre", "Nombre"],
-                ["departamento", "Departamento"],
                 ["imagenUrl", "URL de imagen"],
                 ["youtubeUrl", "URL de YouTube"],
                 ["googleMapsUrl", "URL de Google Maps"],
@@ -563,6 +572,27 @@ function AtractivosContenido() {
                   />
                 </label>
               ))}
+              <label className="mt-3 block text-sm font-medium text-zinc-800">
+                Departamento
+                <select
+                  value={atractivoEditando.departamento || ""}
+                  onChange={(event) =>
+                    setAtractivoEditando((valor) => ({
+                      ...valor,
+                      departamento: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  required
+                >
+                  <option value="">Seleccionar departamento</option>
+                  {departamentosCatamarca.map((departamento) => (
+                    <option key={departamento} value={departamento}>
+                      {departamento}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <label className="mt-3 block text-sm font-medium text-zinc-800">
                 Descripción
                 <textarea

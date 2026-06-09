@@ -31,6 +31,8 @@ function normalizarActividad(body = {}) {
       ? body.atractivoId.trim()
       : typeof body?.atractivo === "string"
         ? body.atractivo.trim()
+        : typeof body?.atractivo?._id === "string"
+          ? body.atractivo._id.trim()
         : "";
   return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
@@ -129,6 +131,9 @@ export async function POST(request) {
     }
 
     const actividadCreada = await Actividad.create(datos);
+    await Atractivo.findByIdAndUpdate(datos.atractivo, {
+      $addToSet: { actividades: actividadCreada._id },
+    });
     const actividad = await Actividad.findById(actividadCreada._id).populate(
       "atractivo"
     );
@@ -191,17 +196,25 @@ export async function PUT(request) {
       ]);
     }
 
-    const actividad = await Actividad.findByIdAndUpdate(id, datos, {
-      new: true,
-      runValidators: true,
-    }).populate("atractivo");
-
-    if (!actividad) {
+    const actividadAnterior = await Actividad.findById(id).select("atractivo");
+    if (!actividadAnterior) {
       return NextResponse.json(
         { error: "Actividad no encontrada." },
         { status: 404 }
       );
     }
+
+    const actividad = await Actividad.findByIdAndUpdate(id, datos, {
+      new: true,
+      runValidators: true,
+    }).populate("atractivo");
+
+    await Atractivo.findByIdAndUpdate(actividadAnterior.atractivo, {
+      $pull: { actividades: actividad._id },
+    });
+    await Atractivo.findByIdAndUpdate(datos.atractivo, {
+      $addToSet: { actividades: actividad._id },
+    });
 
     return NextResponse.json(
       { mensaje: "Actividad actualizada correctamente.", actividad },
@@ -243,6 +256,10 @@ export async function DELETE(request) {
         { status: 404 }
       );
     }
+
+    await Atractivo.findByIdAndUpdate(actividad.atractivo, {
+      $pull: { actividades: actividad._id },
+    });
 
     return NextResponse.json(
       { mensaje: "Actividad borrada correctamente." },

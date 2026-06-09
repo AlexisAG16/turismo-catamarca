@@ -4,7 +4,7 @@ import { verificarAdmin } from "@/lib/authMiddleware";
 import connectDB from "@/lib/mongodb";
 import Atractivo from "@/models/Atractivo";
 import Circuito from "@/models/Circuito";
-import "@/models/Actividad";
+import Actividad from "@/models/Actividad";
 import {
   crearRegexNombreExacto,
   respuestaValidacion,
@@ -46,6 +46,15 @@ function normalizarAtractivo(body = {}) {
     : Array.isArray(body?.actividades)
       ? body.actividades
       : [];
+  const actividadIds = actividades
+    .map((actividad) =>
+      typeof actividad === "string"
+        ? actividad
+        : typeof actividad?._id === "string"
+          ? actividad._id
+          : ""
+    )
+    .filter((id) => mongoose.Types.ObjectId.isValid(id));
 
   return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
@@ -62,7 +71,7 @@ function normalizarAtractivo(body = {}) {
           : "",
       url: imagenUrl,
     },
-    actividades: actividades.filter((id) => mongoose.Types.ObjectId.isValid(id)),
+    actividades: Array.from(new Set(actividadIds)),
     youtubeUrl:
       typeof body?.youtubeUrl === "string" ? body.youtubeUrl.trim() : "",
     googleMapsUrl:
@@ -91,6 +100,14 @@ function validarDatosAtractivo(datos) {
   validarUrl(errores, "imagen.url", datos.imagen.url, { requerido: true });
   validarUrl(errores, "youtubeUrl", datos.youtubeUrl);
   validarUrl(errores, "googleMapsUrl", datos.googleMapsUrl);
+
+  if (datos.actividades.length === 0) {
+    errores.push({
+      campo: "actividades",
+      mensaje: "Debes asociar al menos una actividad al atractivo.",
+    });
+  }
+
   return errores;
 }
 
@@ -190,7 +207,30 @@ export async function POST(request) {
       ]);
     }
 
+    const cantidadActividades = await Actividad.countDocuments({
+      _id: { $in: datos.actividades },
+    });
+    if (cantidadActividades !== datos.actividades.length) {
+      return respuestaValidacion(NextResponse, [
+        {
+          campo: "actividades",
+          mensaje: "Una o más actividades seleccionadas no existen.",
+        },
+      ]);
+    }
+
     const atractivoCreado = await Atractivo.create(datos);
+
+    await Atractivo.updateMany(
+      { _id: { $ne: atractivoCreado._id } },
+      { $pull: { actividades: { $in: datos.actividades } } }
+    );
+
+    await Actividad.updateMany(
+      { _id: { $in: datos.actividades } },
+      { $set: { atractivo: atractivoCreado._id } }
+    );
+
     const atractivo = await Atractivo.findById(atractivoCreado._id).populate(
       "actividades"
     );
@@ -245,6 +285,18 @@ export async function PUT(request) {
       ]);
     }
 
+    const cantidadActividades = await Actividad.countDocuments({
+      _id: { $in: datos.actividades },
+    });
+    if (cantidadActividades !== datos.actividades.length) {
+      return respuestaValidacion(NextResponse, [
+        {
+          campo: "actividades",
+          mensaje: "Una o más actividades seleccionadas no existen.",
+        },
+      ]);
+    }
+
     const atractivo = await Atractivo.findByIdAndUpdate(id, datos, {
       new: true,
       runValidators: true,
@@ -256,6 +308,16 @@ export async function PUT(request) {
         { status: 404 }
       );
     }
+
+    await Atractivo.updateMany(
+      { _id: { $ne: atractivo._id } },
+      { $pull: { actividades: { $in: datos.actividades } } }
+    );
+
+    await Actividad.updateMany(
+      { _id: { $in: datos.actividades } },
+      { $set: { atractivo: atractivo._id } }
+    );
 
     return NextResponse.json(
       { mensaje: "Atractivo actualizado correctamente.", atractivo },

@@ -18,7 +18,14 @@ function noAutorizado(request) {
 }
 
 function datosActividad(body = {}) {
-  const atractivo = typeof body?.atractivoId === "string" ? body.atractivoId.trim() : typeof body?.atractivo === "string" ? body.atractivo.trim() : "";
+  const atractivo =
+    typeof body?.atractivoId === "string"
+      ? body.atractivoId.trim()
+      : typeof body?.atractivo === "string"
+        ? body.atractivo.trim()
+        : typeof body?.atractivo?._id === "string"
+          ? body.atractivo._id.trim()
+          : "";
   return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
     descripcion: typeof body?.descripcion === "string" ? body.descripcion.trim() : "",
@@ -81,8 +88,18 @@ export async function PUT(request, { params }) {
       ]);
     }
 
+    const actividadAnterior = await Actividad.findById(id).select("atractivo");
+    if (!actividadAnterior) {
+      return NextResponse.json({ error: "Actividad no encontrada." }, { status: 404 });
+    }
+
     const actividad = await Actividad.findByIdAndUpdate(id, datos, { new: true, runValidators: true }).populate("atractivo");
-    if (!actividad) return NextResponse.json({ error: "Actividad no encontrada." }, { status: 404 });
+    await Atractivo.findByIdAndUpdate(actividadAnterior.atractivo, {
+      $pull: { actividades: actividad._id },
+    });
+    await Atractivo.findByIdAndUpdate(datos.atractivo, {
+      $addToSet: { actividades: actividad._id },
+    });
     return NextResponse.json({ mensaje: "Actividad actualizada correctamente.", actividad }, { status: 200 });
   } catch {
     return NextResponse.json({ error: "No se pudo actualizar la actividad." }, { status: 500 });
@@ -103,6 +120,9 @@ export async function DELETE(request, { params }) {
     await connectDB();
     const actividad = await Actividad.findByIdAndDelete(id);
     if (!actividad) return NextResponse.json({ error: "Actividad no encontrada." }, { status: 404 });
+    await Atractivo.findByIdAndUpdate(actividad.atractivo, {
+      $pull: { actividades: actividad._id },
+    });
     return NextResponse.json({ mensaje: "Actividad borrada correctamente." }, { status: 200 });
   } catch {
     return NextResponse.json({ error: "No se pudo borrar la actividad." }, { status: 500 });

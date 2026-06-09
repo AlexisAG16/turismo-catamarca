@@ -96,6 +96,10 @@ export default function CargarAtractivoPage() {
     return intentoEnviar && !formulario[nombreCampo].trim();
   }
 
+  function actividadesInvalidas() {
+    return intentoEnviar && formulario.actividadIds.length === 0;
+  }
+
   function clasesCampo(nombreCampo) {
     return campoInvalido(nombreCampo)
       ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
@@ -119,6 +123,14 @@ export default function CargarAtractivoPage() {
       return;
     }
 
+    if (formulario.actividadIds.length === 0) {
+      setToast({
+        mensaje: "Selecciona al menos una actividad asociada.",
+        tipo: "error",
+      });
+      return;
+    }
+
     setCargando(true);
     setToast({ mensaje: "Conectando con la base de datos...", tipo: "loading" });
 
@@ -133,6 +145,7 @@ export default function CargarAtractivoPage() {
               url: formulario.imagenUrl,
             }
           : null,
+        actividadIds: formulario.actividadIds,
         youtubeUrl: formulario.youtubeUrl,
         googleMapsUrl: formulario.googleMapsUrl,
       };
@@ -147,26 +160,13 @@ export default function CargarAtractivoPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.mensaje || "No se pudo cargar el atractivo.");
+        const detalle = Array.isArray(data.errores)
+          ? data.errores.map((item) => item.mensaje).join(" ")
+          : "";
+        throw new Error(
+          detalle || data.error || data.mensaje || "No se pudo cargar el atractivo."
+        );
       }
-
-      await Promise.all(
-        formulario.actividadIds.map((actividadId) => {
-          const actividad = actividades.find((item) => item._id === actividadId);
-          if (!actividad) return null;
-
-          return fetch(`/api/actividades/${actividadId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              nombre: actividad.nombre,
-              descripcion: actividad.descripcion,
-              duracionEstimada: actividad.duracionEstimada || "",
-              atractivoId: data.atractivo._id,
-            }),
-          });
-        })
-      );
 
       setToast({ mensaje: "Atractivo guardado correctamente en la base de datos.", tipo: "success" });
       setFormulario(estadoInicial);
@@ -270,7 +270,11 @@ export default function CargarAtractivoPage() {
 
           <label className="block text-sm font-medium text-zinc-800">
             Actividades asociadas
-            <div className="mt-2 max-h-48 space-y-2 overflow-auto rounded-md border border-zinc-300 bg-white p-3">
+            <div
+              className={`mt-2 max-h-48 space-y-2 overflow-auto rounded-md border bg-white p-3 ${
+                actividadesInvalidas() ? "border-red-500" : "border-zinc-300"
+              }`}
+            >
               {actividades.length === 0 ? (
                 <p className="text-sm text-zinc-500">
                   No hay actividades disponibles para asociar.
@@ -294,6 +298,11 @@ export default function CargarAtractivoPage() {
                 ))
               )}
             </div>
+            {actividadesInvalidas() && (
+              <span className="mt-1 block text-xs font-medium text-red-600">
+                Selecciona al menos una actividad
+              </span>
+            )}
           </label>
 
           <label className="block text-sm font-medium text-zinc-800">

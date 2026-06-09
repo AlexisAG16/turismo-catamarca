@@ -9,6 +9,7 @@ const actividadSchema = new mongoose.Schema(
     },
     descripcion: {
       type: String,
+      required: true,
       trim: true,
     },
     duracionEstimada: {

@@ -39,13 +39,26 @@ function validarSesion(request) {
 }
 
 function normalizarCircuito(body = {}) {
+  const atractivos = Array.isArray(body?.atractivoIds)
+    ? body.atractivoIds
+    : Array.isArray(body?.atractivos)
+      ? body.atractivos
+      : [];
+  const atractivoIds = atractivos
+    .map((atractivo) =>
+      typeof atractivo === "string"
+        ? atractivo
+        : typeof atractivo?._id === "string"
+          ? atractivo._id
+          : ""
+    )
+    .filter((id) => mongoose.Types.ObjectId.isValid(id));
+
   return {
     nombre: typeof body?.nombre === "string" ? body.nombre.trim() : "",
     descripcion:
       typeof body?.descripcion === "string" ? body.descripcion.trim() : "",
-    atractivoIds: Array.isArray(body?.atractivoIds)
-      ? body.atractivoIds.filter((id) => mongoose.Types.ObjectId.isValid(id))
-      : [],
+    atractivoIds: Array.from(new Set(atractivoIds)),
   };
 }
 
@@ -53,11 +66,16 @@ function validarDatosCircuito(datos) {
   const errores = [];
   validarTexto(errores, "nombre", datos.nombre, { min: 3, max: 100 });
   validarTexto(errores, "descripcion", datos.descripcion, { min: 20, max: 1200 });
+  if (datos.atractivoIds.length === 0) {
+    errores.push({
+      campo: "atractivoIds",
+      mensaje: "Debes asociar al menos un atractivo al circuito.",
+    });
+  }
   return errores;
 }
 
 async function validarAtractivosExistentes(ids) {
-  if (ids.length === 0) return true;
   const total = await Atractivo.countDocuments({ _id: { $in: ids } });
   return total === ids.length;
 }
@@ -186,6 +204,14 @@ export async function PUT(request) {
       ]);
     }
 
+    const circuitoAnterior = await Circuito.findById(id).select("atractivos");
+    if (!circuitoAnterior) {
+      return NextResponse.json(
+        { error: "Circuito no encontrado." },
+        { status: 404 }
+      );
+    }
+
     const circuito = await Circuito.findByIdAndUpdate(id, {
       nombre: datos.nombre,
       descripcion: datos.descripcion,
@@ -195,19 +221,17 @@ export async function PUT(request) {
       runValidators: true,
     });
 
-    if (!circuito) {
-      return NextResponse.json(
-        { error: "Circuito no encontrado." },
-        { status: 404 }
-      );
-    }
-
-    if (datos.atractivoIds.length > 0) {
-      await Atractivo.updateMany(
-        { _id: { $in: datos.atractivoIds } },
-        { $set: { circuito: circuito._id } }
-      );
-    }
+    const retirados = circuitoAnterior.atractivos.filter(
+      (atractivoId) => !datos.atractivoIds.includes(atractivoId.toString())
+    );
+    await Atractivo.updateMany(
+      { _id: { $in: retirados }, circuito: circuito._id },
+      { $unset: { circuito: "" } }
+    );
+    await Atractivo.updateMany(
+      { _id: { $in: datos.atractivoIds } },
+      { $set: { circuito: circuito._id } }
+    );
 
     return NextResponse.json(
       {
@@ -257,6 +281,11 @@ export async function DELETE(request) {
         { status: 404 }
       );
     }
+
+    await Atractivo.updateMany(
+      { circuito: circuito._id },
+      { $unset: { circuito: "" } }
+    );
 
     return NextResponse.json(
       { mensaje: "Circuito borrado correctamente." },
