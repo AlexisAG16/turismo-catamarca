@@ -1,319 +1,513 @@
-# Turismo Catamarca - Especificacion del Proyecto
+# Turismo Catamarca - Especificación del Proyecto
 
-## 1. Descripcion breve del problema
+Aplicación web para explorar atractivos turísticos de Catamarca, consultar circuitos, asociar actividades, guardar un itinerario personal y administrar la información turística desde una base de datos MongoDB.
 
-La informacion turistica de Catamarca suele encontrarse dispersa en distintas fuentes, redes sociales, paginas institucionales, mapas y recomendaciones informales. Esta dispersion dificulta que una persona pueda descubrir atractivos, comparar circuitos, conocer actividades disponibles y planificar un recorrido con informacion clara, organizada y actualizada.
+## 1. Descripción Breve Del Problema
 
-El problema principal que aborda este proyecto es la falta de una plataforma web centralizada para consultar atractivos turisticos de Catamarca junto con sus circuitos, actividades, imagenes, videos y ubicaciones. La solucion busca facilitar la exploracion y planificacion turistica, reduciendo la friccion entre descubrir un lugar y decidir visitarlo.
+La información turística de Catamarca suele estar distribuida entre páginas institucionales, redes sociales, mapas, videos, notas periodísticas y recomendaciones informales. Esa dispersión dificulta que una persona pueda descubrir atractivos por departamento, conocer actividades asociadas, ver ubicaciones reales y organizar una visita sin saltar entre muchas fuentes.
 
-## 2. Destinatarios principales
+El proyecto aborda la necesidad de centralizar la consulta turística provincial en una plataforma clara, visual y administrable. La solución permite presentar atractivos, circuitos y actividades con textos formales, imágenes, videos y enlaces de mapa, reduciendo la fricción entre descubrir un lugar y planificar una visita.
 
-Los destinatarios principales son:
+## 2. Destinatarios Principales
 
-- Turistas que desean conocer Catamarca y necesitan informacion organizada para planificar su visita.
-- Residentes de la provincia interesados en redescubrir atractivos, circuitos y actividades locales.
-- Administradores o gestores turisticos responsables de cargar y mantener actualizada la informacion del sitio.
-- Usuarios registrados que desean guardar atractivos en un itinerario personal.
+- Turistas que desean conocer Catamarca y necesitan información organizada antes o durante el viaje.
+- Residentes interesados en redescubrir atractivos, actividades y circuitos provinciales.
+- Usuarios registrados que quieren guardar atractivos en un itinerario personal.
+- Administradores responsables de cargar, corregir y mantener datos turísticos.
+- Docentes, evaluadores o equipos técnicos que necesitan revisar el alcance funcional y técnico del proyecto.
 
-## 3. Contexto de uso
+## 3. Contexto De Uso
 
-El sitio esta pensado para utilizarse desde navegadores web en computadoras, tablets o celulares. Puede consultarse antes de viajar, durante la planificacion de un recorrido o mientras el visitante se encuentra en Catamarca y necesita acceder rapidamente a informacion del destino.
+El sitio está pensado para navegadores web en escritorio, tablet y celular. Puede utilizarse en etapa de planificación, durante el viaje o como catálogo turístico provincial. El usuario público puede filtrar atractivos, navegar por páginas de resultados, abrir mapas, consultar videos, revisar actividades y guardar lugares en su itinerario.
 
-En el contexto publico, el usuario puede explorar atractivos, filtrar resultados, consultar mapas, ver videos y revisar actividades asociadas. En el contexto administrativo, una persona con permisos puede cargar, editar o eliminar atractivos, circuitos y actividades desde secciones protegidas.
+El usuario administrador puede acceder a formularios protegidos para cargar, editar y eliminar atractivos, circuitos y actividades. También puede descargar un informe Excel con información asociada de las tres entidades principales.
 
-## 4. Objetivo de la solucion
+## 4. Objetivo De La Solución
 
-El objetivo de la solucion es centralizar la oferta turistica de Catamarca en una aplicacion web que permita explorar atractivos, circuitos y actividades de forma simple, visual y organizada.
+Centralizar la oferta turística de Catamarca en una aplicación web responsive, administrable y conectada a MongoDB, que permita:
 
-La plataforma busca:
+- Consultar atractivos por nombre, departamento y circuito.
+- Ver detalles de cada atractivo con actividades asociadas.
+- Relacionar circuitos con sus atractivos.
+- Crear un itinerario personal de atractivos.
+- Descargar informes administrativos en formato `.xlsx`.
+- Mantener datos turísticos con validación backend y estructura consistente.
 
-- Mostrar atractivos turisticos con informacion clara y multimedia.
-- Relacionar cada atractivo con un circuito turistico.
-- Asociar actividades especificas a cada atractivo.
-- Permitir la planificacion mediante un itinerario personal.
-- Brindar herramientas de administracion para mantener la informacion actualizada.
-
-## 5. Alcance funcional con MoSCoW
+## 5. Alcance Funcional Con MoSCoW
 
 ### Must Have
 
-Funcionalidades indispensables:
-
-- Visualizacion de atractivos turisticos.
-- Cada atractivo debe contar con nombre, departamento, descripcion, imagen, ubicacion en mapa, video y circuito asociado.
-- Visualizacion de circuitos turisticos con nombre y descripcion.
-- Visualizacion de actividades con descripcion, duracion estimada y atractivo asociado.
-- Busqueda y filtrado de atractivos por nombre, departamento y circuito.
-- Registro e inicio de sesion de usuarios.
-- Diferenciacion de roles entre usuario comun y administrador.
-- Proteccion de rutas administrativas.
-- Alta, edicion y eliminacion de atractivos.
-- Alta, edicion y eliminacion de circuitos.
-- Alta, edicion y eliminacion de actividades.
-- Conexion persistente con base de datos MongoDB.
+- Listado público de atractivos turísticos.
+- Paginación backend de atractivos con 6 registros por página.
+- Filtros por nombre, departamento y circuito.
+- Detalle individual de atractivo.
+- Listado y detalle de circuitos.
+- Listado de actividades asociadas a atractivos.
+- Relación principal actual: un atractivo puede tener una o varias actividades.
+- Asociación de circuitos con uno o varios atractivos.
+- Registro, inicio de sesión y consulta de sesión.
+- Diferenciación de rol entre usuario común y administrador.
+- Formularios administrativos para atractivos, circuitos y actividades.
+- Validaciones backend para altas y ediciones.
+- Persistencia en MongoDB mediante Mongoose.
+- Enlaces de Google Maps por atractivo.
+- Enlaces de YouTube o búsqueda específica por atractivo.
+- Manejo de imágenes externas con fallback visual.
+- Itinerario personal con alta, baja individual y vaciado completo.
+- Modo claro/oscuro disponible globalmente.
 
 ### Should Have
 
-Funcionalidades importantes pero no criticas para una primera entrega:
-
-- Itinerario personal para que el usuario guarde atractivos de interes.
-- Visualizacion de mapas embebidos dentro de la interfaz.
-- Visualizacion de videos de YouTube dentro de modales.
-- Mensajes de confirmacion, error y carga mediante notificaciones visuales.
-- Confirmacion antes de eliminar registros.
-- Manejo de imagen de respaldo cuando una URL externa no carga.
-- Formularios con validacion de campos obligatorios.
+- Botón de volver desde el detalle de atractivo conservando la página del paginado.
+- Estados vacíos útiles cuando no hay resultados.
+- Confirmaciones visuales antes de borrar registros.
+- Toasts de carga, éxito y error.
+- Botones administrativos de editar y borrar integrados dentro de las tarjetas.
+- Botón administrativo de informe en soporte.
+- Descarga de informe Excel con hojas separadas para circuitos, atractivos y actividades.
+- SEO básico mediante metadata global.
+- Normalización de textos rotos por codificación en la base de datos y en el código.
+- Soporte responsive en navegación, tarjetas, listas, modales y menús.
 
 ### Could Have
 
-Funcionalidades deseables para ampliar el valor del producto:
+- Categorías explícitas para atractivos o actividades: religioso, natural, arqueológico, cultural, aventura.
+- Niveles de dificultad y recomendaciones de preparación para actividades.
+- Carga directa de imágenes desde el panel administrativo a un servicio de almacenamiento.
+- Favoritos sincronizados entre dispositivos desde MongoDB.
+- Recomendaciones automáticas por departamento o tipo de experiencia.
+- Estadísticas de atractivos más guardados o más consultados.
+- Pruebas automatizadas para APIs, formularios y flujos principales.
 
-- Recomendaciones de atractivos segun departamento, circuito o tipo de experiencia.
-- Mas categorias de actividades, por ejemplo aventura, cultura, historia, naturaleza o religioso.
-- Calificaciones o comentarios de usuarios.
-- Favoritos sincronizados en base de datos por usuario.
-- Panel con estadisticas de atractivos mas guardados o mas consultados.
-- Integracion con servicios externos de clima o distancia.
-- Carga de imagenes directa a Cloudinary desde todos los formularios administrativos.
+### Won't Have Por Ahora
 
-### Won't Have por ahora
-
-Funcionalidades fuera del alcance actual:
-
-- Reservas turisticas.
-- Pagos en linea.
-- Contratacion directa de guias, excursiones o alojamientos.
-- Sistema de disponibilidad horaria.
-- Geolocalizacion en tiempo real del usuario.
+- Reservas turísticas.
+- Pagos en línea.
+- Contratación directa de guías, excursiones o alojamientos.
 - Chat interno entre turistas y prestadores.
-- Aplicacion movil nativa.
+- Geolocalización en tiempo real.
+- Aplicación móvil nativa.
+- Sistema de disponibilidad horaria.
 
-## 6. Funcionalidades del sitio
+## 6. Funcionalidades Del Sitio
 
-### Pagina principal
+### Inicio
 
-Presenta la identidad general del proyecto y funciona como entrada a las secciones principales del sitio turistico.
+Página de entrada al sitio con navegación hacia atractivos, circuitos, actividades, contacto, soporte, autenticación e itinerario.
 
 ### Atractivos
 
-Permite consultar tarjetas de atractivos turisticos. Cada tarjeta muestra imagen, departamento, nombre, descripcion breve y botones para abrir mapa o video. La pagina incluye filtros por nombre, departamento y circuito.
+Listado principal de atractivos turísticos. Incluye:
 
-### Detalle de atractivo
+- Tarjetas con imagen, departamento, nombre y descripción breve.
+- Botones para mapa y video.
+- Botón de itinerario con ícono de corazón.
+- Filtros por nombre, departamento y circuito.
+- Selector de departamentos completo para los 16 departamentos de Catamarca.
+- Paginación con primera, anterior, siguiente y última página.
+- Estados vacíos con mensaje contextual y botón para limpiar filtros.
+- Controles de edición y eliminación dentro de la tarjeta para administradores.
 
-Permite consultar informacion ampliada de un atractivo especifico, incluyendo descripcion, multimedia y datos asociados.
+### Detalle De Atractivo
+
+Página individual de un atractivo. Incluye:
+
+- Imagen principal con fallback.
+- Descripción completa.
+- Departamento.
+- Actividades asociadas.
+- Enlaces de mapa y video.
+- Botón para volver a la lista conservando la página previa del paginado.
 
 ### Circuitos
 
-Lista los circuitos turisticos cargados en la base de datos. Cada circuito puede agrupar uno o mas atractivos.
+Listado de circuitos en formato de lista vertical de ancho completo, evitando tarjetas cuadradas. Cada circuito muestra nombre, descripción y acceso a su detalle.
+
+### Detalle De Circuito
+
+Página individual de circuito. Muestra:
+
+- Nombre y descripción.
+- Atractivos asociados.
+- Actividades de los atractivos del circuito.
+- Imagen de referencia basada en el primer atractivo disponible.
+- Fallback si la imagen externa falla.
 
 ### Actividades
 
-Muestra actividades asociadas a atractivos concretos, con descripcion y duracion estimada.
+Listado de actividades con descripción, duración estimada y atractivo asociado. Las actividades son experiencias concretas vinculadas a atractivos, no a circuitos como dependencia principal.
 
 ### Itinerario
 
-Permite que un usuario guarde atractivos de interes para organizar un recorrido personal.
+Funcionalidad de planificación personal. Incluye:
 
-### Autenticacion
+- Botón global en la navegación.
+- Modal desplegable con atractivos guardados.
+- Contador de elementos.
+- Eliminación individual desde el modal.
+- Botón para vaciar todo el itinerario.
+- Página dedicada de itinerario con resumen, acciones y opción de impresión.
+- Persistencia local y sincronización con eventos del navegador.
 
-Incluye registro, inicio de sesion y consulta de sesion activa. La autenticacion permite distinguir usuarios comunes de administradores.
+### Autenticación
 
-### Administracion
+Incluye:
 
-Incluye pantallas para cargar atractivos, circuitos y actividades. Estas secciones estan pensadas para usuarios con rol administrador.
+- Registro.
+- Inicio de sesión.
+- Cierre de sesión.
+- Consulta de sesión activa.
+- Uso de JWT.
+- Hash de contraseña con `bcryptjs`.
 
-## 7. Entidades principales del dominio
+### Administración
+
+El rol administrador habilita:
+
+- Carga de atractivos.
+- Carga de circuitos.
+- Carga de actividades.
+- Edición y borrado desde listados.
+- Botón `Informe` en soporte.
+- Descarga de Excel con datos asociados.
+
+### Soporte E Informes
+
+La página de soporte incorpora un botón administrativo `Informe`, con comportamiento responsive. Descarga un archivo `.xlsx` generado desde el backend con tres hojas:
+
+- `Circuitos`.
+- `Atractivos`.
+- `Actividades`.
+
+El informe incluye datos asociados entre entidades para facilitar revisión, entrega o respaldo.
+
+### Modo Claro/Oscuro
+
+El sitio cuenta con un selector global de tema con íconos de sol y luna. El estado se conserva en `localStorage`, evita errores de hidratación y se sincroniza entre componentes mediante eventos.
+
+## 7. Datos Turísticos Cargados
+
+La base de datos fue ampliada para cubrir al menos un atractivo en cada uno de los 16 departamentos de Catamarca:
+
+- Ambato.
+- Ancasti.
+- Andalgalá.
+- Antofagasta de la Sierra.
+- Belén.
+- Capayán.
+- Capital.
+- El Alto.
+- Fray Mamerto Esquiú.
+- La Paz.
+- Paclín.
+- Pomán.
+- Santa María.
+- Santa Rosa.
+- Tinogasta.
+- Valle Viejo.
+
+También se agregaron atractivos religiosos, arqueológicos, naturales y museísticos, entre ellos:
+
+- Catedral Basílica Nuestra Señora del Valle.
+- Gruta de la Virgen del Valle.
+- Monumento a la Virgen del Valle.
+- Monumento a Nuestra Señora de Belén.
+- Iglesia de San Pablo.
+- Dique de Collagasta.
+- Dique La Cañada.
+- El Shincal de Quimivil.
+- Campo de Piedra Pómez.
+- Dunas de Tatón.
+- Museo Arqueológico Adán Quiroga.
+- Museo de la Virgen del Valle.
+- Museo Arqueológico Cóndor Huasi.
+
+Las imágenes se clasifican mediante `public_id`. Cuando una imagen es generada o provisoria, se marca con prefijos como `generada-*`. Cuando se encuentra una imagen real estable, se usa una URL directa o una redirección estable de Wikimedia, Fotopaises, Turismo SFVC u otra fuente pública.
+
+## 8. Entidades Del Dominio
 
 ### Atractivo
 
-Representa un lugar turistico de Catamarca. Campos principales:
+Representa un lugar turístico. Campos principales:
 
-- Nombre.
-- Departamento.
-- Descripcion.
-- Imagen.
-- Circuito asociado.
-- URL de YouTube.
-- URL de Google Maps.
+- `nombre`.
+- `departamento`.
+- `descripcion`.
+- `imagen.public_id`.
+- `imagen.url`.
+- `actividades`.
+- `youtubeUrl`.
+- `googleMapsUrl`.
+- `circuito` cuando corresponde.
 
 ### Circuito
 
-Representa una ruta o propuesta turistica que agrupa atractivos. Campos principales:
+Representa una propuesta de recorrido. Campos principales:
 
-- Nombre.
-- Descripcion.
+- `nombre`.
+- `descripcion`.
+- `atractivos`.
 
 ### Actividad
 
-Representa una experiencia concreta que puede realizarse en un atractivo. Campos principales:
+Representa una experiencia asociada a un atractivo. Campos principales:
 
-- Nombre.
-- Descripcion.
-- Duracion estimada.
-- Costo aproximado.
-- Atractivo asociado.
+- `nombre`.
+- `descripcion`.
+- `duracionEstimada`.
+- `atractivo`.
+
+El campo `costoAproximado` existe en el modelo como opcional, pero no forma parte del formulario ni se exige en la validación backend.
 
 ### Usuario
 
-Representa una persona registrada en el sistema. Campos principales:
+Representa una persona registrada. Campos principales:
 
-- Nombre o datos de identificacion definidos por el modelo.
-- Credenciales de acceso.
-- Rol de usuario o administrador.
-- Itinerario personal.
+- Datos de identificación.
+- Email.
+- Contraseña hasheada.
+- Rol.
+- Itinerario cuando aplica.
 
-## 8. Especificaciones tecnicas
+## 9. Especificaciones Técnicas
 
-### Framework principal
+### Stack Principal
 
-El proyecto esta desarrollado con Next.js `16.2.6`, utilizando la estructura `app/` propia del App Router.
-
-### Lenguaje
-
-El proyecto usa principalmente JavaScript para paginas, componentes, rutas API y scripts. Tambien incluye configuracion TypeScript mediante `tsconfig.json`, `next-env.d.ts`, `layout.tsx` y `next.config.ts`.
-
-### Frontend
-
-Tecnologias y librerias principales:
-
+- Next.js `16.2.6`.
 - React `19.2.4`.
 - React DOM `19.2.4`.
 - Tailwind CSS `4`.
-- Componentes cliente con `"use client"`.
-- `next/image` para renderizado de imagenes.
-- `next/link` y `next/navigation` para navegacion.
-- SweetAlert2 para confirmaciones visuales.
+- MongoDB.
+- Mongoose `9.6.2`.
+- JavaScript como lenguaje principal.
+- TypeScript en configuración y layout.
+
+### App Router
+
+El proyecto utiliza la estructura `app/` de Next.js:
+
+- Páginas públicas.
+- Páginas dinámicas.
+- Route Handlers API.
+- Layout global.
+- Metadata SEO.
 
 ### Backend
 
-El backend se implementa con Route Handlers de Next.js dentro de `app/api/`.
+El backend se implementa mediante Route Handlers en:
 
-Rutas principales:
+- `app/api/atractivos/route.js`.
+- `app/api/atractivos/[id]/route.js`.
+- `app/api/circuitos/route.js`.
+- `app/api/circuitos/[id]/route.js`.
+- `app/api/actividades/route.js`.
+- `app/api/actividades/[id]/route.js`.
+- `app/api/auth/login/route.js`.
+- `app/api/auth/register/route.js`.
+- `app/api/auth/session/route.js`.
+- `app/api/itinerario/route.js`.
+- `app/api/informes/excel/route.js`.
 
-- `app/api/atractivos/route.js`
-- `app/api/atractivos/[id]/route.js`
-- `app/api/circuitos/route.js`
-- `app/api/circuitos/[id]/route.js`
-- `app/api/actividades/route.js`
-- `app/api/actividades/[id]/route.js`
-- `app/api/auth/login/route.js`
-- `app/api/auth/register/route.js`
-- `app/api/auth/session/route.js`
-- `app/api/itinerario/route.js`
+### Validación Backend
 
-### Base de datos
+Las APIs administrativas validan datos antes de persistir:
 
-La base de datos utilizada es MongoDB. La conexion se realiza mediante Mongoose `9.6.2`, usando la variable de entorno `MONGODB_URI` definida en `.env.local`.
+- Texto obligatorio.
+- Longitud mínima y máxima.
+- URLs `http` o `https`.
+- IDs válidos de MongoDB.
+- Existencia de referencias asociadas.
+- Evitar duplicados por nombre.
+- Validación de atractivo asociado en actividades.
+- Validación de atractivos asociados en circuitos.
 
-Archivo de conexion:
+Archivo central:
 
-- `lib/mongodb.js`
+- `lib/serverValidation.js`.
 
-Modelos principales:
+### Base De Datos
 
-- `models/Atractivo.js`
-- `models/Circuito.js`
-- `models/Actividad.js`
-- `models/User.js`
+MongoDB se conecta mediante:
 
-### Autenticacion y autorizacion
+- `lib/mongodb.js`.
 
-El proyecto utiliza:
+Modelos:
 
-- `bcryptjs` para hash de contrasenas.
-- `jsonwebtoken` para manejo de tokens JWT.
-- Middleware/helper de autorizacion en `lib/authMiddleware.js`.
+- `models/Atractivo.js`.
+- `models/Circuito.js`.
+- `models/Actividad.js`.
+- `models/User.js`.
 
-El sistema diferencia al menos dos perfiles:
+Variables de entorno necesarias:
 
-- Usuario comun.
-- Administrador.
+- `MONGODB_URI`.
+- `JWT_SECRET`.
 
-Las operaciones administrativas requieren validacion de permisos.
+### Autenticación Y Autorización
 
-### Variables de entorno
+- `bcryptjs` para contraseñas.
+- `jsonwebtoken` para tokens.
+- Helper de autorización en `lib/authMiddleware.js`.
+- Middleware/proxy en `proxy.js` para rutas protegidas.
 
-Variables detectadas en `.env.local`:
+### Informes Excel
 
-- `MONGODB_URI`: cadena de conexion a MongoDB.
-- `JWT_SECRET`: secreto utilizado para firmar/verificar tokens JWT.
+El endpoint `app/api/informes/excel/route.js` genera un `.xlsx` sin depender de una librería externa de planillas. Construye internamente las partes Open XML del workbook y devuelve un archivo con hojas para circuitos, atractivos y actividades.
 
-### Herramientas de desarrollo
+### SEO Básico
 
-Scripts disponibles:
+El layout global define:
+
+- `metadataBase`.
+- Título default y template.
+- Descripción.
+- Keywords.
+- Open Graph.
+- Robots index/follow.
+- Idioma `es`.
+
+### Imágenes Y Fallback
+
+Las tarjetas y páginas de detalle contemplan imágenes externas. Si una imagen no carga:
+
+- Se usa fallback visual.
+- Se evita dejar íconos rotos.
+- Se preserva la estabilidad visual de la tarjeta.
+
+### Paginación
+
+La paginación de atractivos se calcula desde backend:
+
+- Query params: `page`, `limit`, `nombre`, `departamento`, `circuito`.
+- Límite por defecto: 6.
+- Respuesta con `paginacion`.
+- Navegación por primera, anterior, siguiente y última página.
+
+### Normalización De Textos
+
+Se trabajó sobre textos con caracteres rotos por codificación. El proyecto debe conservar UTF-8 y escribir correctamente acentos, eñes y nombres propios:
+
+- Catamarca.
+- Belén.
+- Tinogasta.
+- Paclín.
+- Pomán.
+- Andalgalá.
+- Fray Mamerto Esquiú.
+
+## 10. Estructura Del Proyecto
+
+```text
+app/          Páginas, layouts y APIs.
+components/   Componentes reutilizables.
+docs/         Documentación del proyecto.
+lib/          Conexión MongoDB, auth, validación y utilidades.
+models/       Modelos Mongoose.
+public/       Recursos estáticos.
+scripts/      MCP, carga, sincronización y normalización de datos.
+specs/        Especificaciones auxiliares.
+```
+
+Componentes principales:
+
+- `Navbar.js`.
+- `CardAtractivo.js`.
+- `FormAtractivo.js`.
+- `FormCircuito.js`.
+- `Toast.js`.
+- `ToastProvider.js`.
+- `LoadingState.js`.
+
+Scripts destacados:
+
+- `scripts/mcp-mongodb.js`.
+- `scripts/rebuild-tourism-data.js`.
+- `scripts/normalize-spanish-text-data.js`.
+- `scripts/sync-attraction-activities.js`.
+- `scripts/sync-circuit-attractions.js`.
+- `scripts/seed-pagination-test-data.js`.
+
+## 11. MCP Local Para MongoDB
+
+Se creó un MCP local para operar MongoDB desde Codex usando las credenciales de `.env.local`. Herramientas disponibles:
+
+- `mongodb_database_info`.
+- `mongodb_list_collections`.
+- `mongodb_count_documents`.
+- `mongodb_find_documents`.
+- `mongodb_insert_document`.
+- `mongodb_update_document`.
+- `mongodb_aggregate`.
+
+Esto permite auditar, insertar y corregir datos sin exponer credenciales en la conversación ni duplicarlas fuera del entorno local.
+
+## 12. Ejecución Local
+
+Instalar dependencias:
+
+```bash
+npm install
+```
+
+Crear `.env.local`:
+
+```env
+MONGODB_URI=...
+JWT_SECRET=...
+```
+
+Ejecutar en desarrollo:
 
 ```bash
 npm run dev
-npm run build
-npm run start
+```
+
+Abrir:
+
+```text
+http://localhost:3000
+```
+
+Validar lint:
+
+```bash
 npm run lint
 ```
 
-El proyecto usa ESLint `9` con `eslint-config-next` `16.2.6`.
+Compilar producción:
 
-### MCP local para MongoDB
+```bash
+npm run build
+```
 
-Se agrego un servidor MCP local para conectarse a MongoDB desde Codex:
+## 13. Criterios De Calidad
 
-- `scripts/mcp-mongodb.js`
+- Mantener relaciones consistentes entre atractivos, actividades y circuitos.
+- No cargar atractivos sin imagen, mapa o video/búsqueda específica.
+- Preferir imágenes reales y directas. Si no existen, usar imagen generada marcada como tal.
+- Evitar imágenes que muestren mapas cuando deberían mostrar paisajes o monumentos.
+- Evitar paisajes confusos que no correspondan al lugar.
+- Mantener textos turísticos formales y claros.
+- Validar datos en backend, no solo en frontend.
+- Revisar `npm run lint` antes de cerrar cambios.
+- Preservar responsive en navegación, listas, tarjetas, modales y formularios.
 
-Herramientas disponibles:
+## 14. Limitaciones Actuales
 
-- `mongodb_database_info`
-- `mongodb_list_collections`
-- `mongodb_count_documents`
-- `mongodb_find_documents`
-- `mongodb_insert_document`
-- `mongodb_update_document`
-- `mongodb_aggregate`
+- Algunas imágenes dependen de servicios externos.
+- Algunos videos son búsquedas específicas de YouTube cuando no hay un video único confiable.
+- No hay tests automatizados dedicados.
+- No hay carga de imágenes propia desde el panel.
+- El informe Excel se genera desde backend, pero no incluye gráficos ni tablas dinámicas.
+- Algunas imágenes generadas son provisorias hasta encontrar fotos reales estables.
 
-Este MCP lee `MONGODB_URI` desde `.env.local`, evitando duplicar credenciales en la configuracion global.
+## 15. Mejoras Futuras
 
-### Scripts de carga de datos
-
-Se agrego un script idempotente para cargar atractivos, circuitos y actividades de ejemplo:
-
-- `scripts/seed-extra-attractions.js`
-
-Este script crea o actualiza registros sin duplicarlos cuando se vuelve a ejecutar.
-
-## 9. Estructura general del proyecto
-
-Directorios principales:
-
-- `app/`: paginas, layouts y rutas API.
-- `components/`: componentes reutilizables de interfaz.
-- `lib/`: utilidades compartidas, conexion a MongoDB, autenticacion y datos comunes.
-- `models/`: modelos Mongoose.
-- `public/`: recursos estaticos.
-- `scripts/`: herramientas locales y scripts de carga.
-- `docs/`: documentacion del proyecto.
-
-## 10. Criterios de calidad esperados
-
-- Las pantallas deben ser claras, navegables y adaptables a distintos tamanos de pantalla.
-- Los formularios deben validar campos obligatorios antes de enviar datos.
-- Las operaciones de administracion deben estar protegidas por rol.
-- Las imagenes externas deben tener manejo de fallback para evitar iconos rotos.
-- Las relaciones entre atractivo, circuito y actividad deben mantenerse consistentes.
-- Las descripciones deben usar un tono formal, turistico y comprensible.
-- El sitio debe poder ejecutarse localmente con `npm run dev`.
-- El codigo debe pasar `npm run lint` antes de considerarse estable.
-
-## 11. Limitaciones actuales
-
-- Algunas URLs de imagen y video dependen de servicios externos.
-- No hay sistema de reservas ni pagos.
-- Las ubicaciones se guardan como URLs de Google Maps.
-- La administracion depende del rol registrado en la base de datos.
-- El proyecto no incluye pruebas automatizadas dedicadas por ahora.
-
-## 12. Posibles mejoras futuras
-
-- Normalizar nombres con acentos y soporte completo de codificacion en scripts de carga.
-- Agregar pruebas automatizadas para rutas API y componentes principales.
-- Mejorar el panel administrativo con tablas, busquedas y edicion inline.
-- Crear categorias de actividades y niveles de dificultad.
-- Incorporar valoraciones de usuarios.
-- Permitir carga de imagenes desde el panel administrativo hacia un servicio de almacenamiento.
-- Agregar recomendaciones personalizadas para itinerarios.
+- Incorporar carga de imágenes a Cloudinary, S3 u otro almacenamiento.
+- Agregar categorías y etiquetas por tipo de atractivo.
+- Añadir dificultad, recomendaciones y temporada sugerida en actividades.
+- Sincronizar itinerario por usuario en MongoDB.
+- Agregar pruebas automatizadas para APIs y formularios.
+- Crear panel administrativo con tablas, filtros y edición más cómoda.
+- Agregar métricas de uso e informes más completos.
+- Mejorar videos reemplazando búsquedas por enlaces directos confirmados.
