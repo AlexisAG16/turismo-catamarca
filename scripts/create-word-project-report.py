@@ -11,7 +11,7 @@ from docx.shared import Inches, Pt, RGBColor
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "docs" / "informe-especificaciones-turismo-catamarca.docx"
+OUT = ROOT / "docs" / "informe-general-turismo-catamarca-2026.docx"
 
 
 BLUE = RGBColor(46, 116, 181)
@@ -291,6 +291,11 @@ def build():
         doc,
         "El rol administrador habilita formularios de carga, edición y eliminación. También permite descargar un informe Excel desde soporte, con hojas para circuitos, atractivos y actividades.",
     )
+    add_heading(doc, "5.7 Experiencia Visual Y Navegación", 2)
+    add_body(
+        doc,
+        "La interfaz incorpora modo claro y oscuro, navegación responsive, estados vacíos con acciones de recuperación y un footer global. El pie de página aporta identidad, accesos internos, redes sociales, ubicación y una recomendación para verificar las condiciones de cada recorrido.",
+    )
 
     add_heading(doc, "6. Modelo De Dominio", 1)
     add_label_table(
@@ -309,7 +314,7 @@ def build():
         "La base de datos fue ampliada para cubrir al menos un atractivo en los 16 departamentos de Catamarca. Además, se agregaron atractivos naturales, arqueológicos, religiosos y museísticos para enriquecer el catálogo.",
     )
     for item in [
-        "Naturales: Campo de Piedra Pómez, Volcán Galán, Dunas de Tatón, Cuesta del Portezuelo, Dique de Collagasta y Dique La Cañada.",
+        "Naturales: Campo de Piedra Pómez, Volcán Galán, Dunas de Tatón, Cuesta del Portezuelo y Dique de Collagasta.",
         "Arqueológicos y culturales: El Shincal de Quimivil, Parque Arqueológico La Tunita y Santa María del Yokavil.",
         "Religiosos: Catedral Basílica Nuestra Señora del Valle, Gruta de la Virgen del Valle, Monumento a la Virgen del Valle, Monumento a Nuestra Señora de Belén e Iglesia de San Pablo.",
         "Museos: Museo Arqueológico Adán Quiroga, Museo de la Virgen del Valle y Museo Arqueológico Cóndor Huasi.",
@@ -326,6 +331,7 @@ def build():
             ("Autenticación", "bcryptjs para hash de contraseñas y jsonwebtoken para tokens JWT."),
             ("Validación", "Helper central en lib/serverValidation.js para validar textos, URLs, IDs, duplicados y referencias."),
             ("SEO", "Metadata global con título, descripción, keywords, Open Graph, robots e idioma español."),
+            ("Interfaz", "Tailwind CSS 4, React Icons, tema claro/oscuro, componentes responsive, footer global y estados visuales de carga, error y ausencia de resultados."),
         ],
     )
 
@@ -355,8 +361,22 @@ def build():
         doc,
         "Las imágenes externas se manejan con fallback porque muchas fuentes públicas cambian, bloquean hotlinking o entregan páginas HTML en vez de archivos de imagen. Cuando no se encuentra una foto real estable, se usa una imagen generada marcada explícitamente.",
     )
+    add_body(
+        doc,
+        "La validación se consolidó en backend para que las reglas no dependan solamente del formulario. Así se verifican campos obligatorios, IDs, referencias existentes y URLs incluso cuando la API recibe datos desde otra herramienta.",
+    )
 
-    add_heading(doc, "11. Limitaciones Actuales", 1)
+    add_heading(doc, "11. Aprendizajes Técnicos", 1)
+    for item in [
+        "Una relación debe representar el dominio real: la actividad pertenece al atractivo y el circuito funciona como agrupador.",
+        "La paginación backend reduce datos transferidos y obliga a conservar correctamente el estado de navegación.",
+        "MongoDB acepta caracteres españoles; los problemas de tildes y eñes suelen provenir de una codificación incorrecta.",
+        "El HTML inicial debe ser determinista para evitar errores de hidratación al aplicar el tema del navegador.",
+        "Los recursos externos requieren fallbacks y revisión de correspondencia, no solamente una URL válida.",
+    ]:
+        add_bullet(doc, item)
+
+    add_heading(doc, "12. Limitaciones Actuales", 1)
     for item in [
         "Algunos videos son búsquedas específicas de YouTube en lugar de enlaces directos confirmados.",
         "Algunas imágenes dependen de servicios externos y pueden fallar si la fuente cambia.",
@@ -366,7 +386,7 @@ def build():
     ]:
         add_bullet(doc, item)
 
-    add_heading(doc, "12. Mejoras Futuras", 1)
+    add_heading(doc, "13. Mejoras Futuras", 1)
     for item in [
         "Incorporar carga de imágenes a Cloudinary, S3 u otro almacenamiento.",
         "Agregar categorías de atractivos y actividades.",
@@ -387,7 +407,7 @@ def build():
             ("Actividades", "app/actividades/page.js, app/api/actividades/route.js, app/api/actividades/[id]/route.js"),
             ("Autenticación", "app/login/page.js, app/register/page.js, app/api/auth/*, lib/authMiddleware.js, proxy.js"),
             ("Informes", "app/soporte/page.js, app/api/informes/excel/route.js"),
-            ("Componentes", "components/Navbar.js, components/CardAtractivo.js, components/Toast.js, components/LoadingState.js"),
+            ("Componentes", "components/Navbar.js, components/Footer.tsx, components/CardAtractivo.js, components/Toast.js, components/LoadingState.js"),
             ("Modelos", "models/Atractivo.js, models/Circuito.js, models/Actividad.js, models/User.js"),
         ],
     )

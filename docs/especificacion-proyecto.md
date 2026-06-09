@@ -511,3 +511,35 @@ npm run build
 - Crear panel administrativo con tablas, filtros y edición más cómoda.
 - Agregar métricas de uso e informes más completos.
 - Mejorar videos reemplazando búsquedas por enlaces directos confirmados.
+
+## 16. Actualización Visual Y Documental
+
+### Footer Global
+
+El layout raíz incorpora un pie de página disponible en todas las rutas. Su objetivo es cerrar visualmente la interfaz y ofrecer navegación secundaria sin alterar los flujos funcionales.
+
+- Copyright con año calculado dinámicamente.
+- Identidad y descripción breve de Turismo Catamarca.
+- Enlaces internos a atractivos, circuitos, actividades y contacto.
+- Ubicación general: Catamarca, Argentina.
+- Accesos con iconos a Facebook, X, GitHub e Instagram.
+- Enlace de GitHub dirigido al repositorio real del proyecto.
+- Recomendación para verificar horarios, accesos y condiciones.
+- Diseño responsive y estilos compatibles con modo claro y oscuro.
+- Etiquetas accesibles, títulos y foco visible en enlaces sociales.
+
+Los enlaces de Facebook, X e Instagram son generales hasta disponer de perfiles oficiales.
+
+### Componentes Y Dependencias Incorporadas
+
+- `components/Footer.tsx`: componente global del pie de página.
+- `react-icons` `5.6.0`: iconos de redes sociales y ubicación.
+- `app/layout.tsx`: punto de integración del footer en todas las páginas.
+
+### Estado Actual De Calidad
+
+- El proyecto compila correctamente con Next.js `16.2.6`.
+- El análisis ESLint se ejecuta sin errores.
+- La interfaz mantiene navegación responsive, modo claro/oscuro y fallback de imágenes.
+- Las altas y ediciones validan textos, IDs, referencias y URLs desde backend.
+- El selector de departamento utiliza los 16 valores definidos por el dominio.

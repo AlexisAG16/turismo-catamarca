@@ -3,7 +3,7 @@
   "info": {
     "title": "Catamarca Turismo API",
     "description": "API Full Stack para la gestión de circuitos, atractivos turísticos y actividades de la Provincia de Catamarca, Argentina. Incluye integración multimedia con videos de YouTube y mapas interactivos de Google Maps para optimizar la planificación de itinerarios.",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "contact": {
       "name": "Alexis"
     }
@@ -57,16 +57,27 @@
     "/atractivos": {
       "get": {
         "summary": "Obtener todos los atractivos turísticos",
-        "description": "Retorna los puntos de interés multimedia de la provincia, vinculados a sus respectivos circuitos.",
+        "description": "Retorna atractivos paginados, con filtros opcionales por nombre, departamento y circuito.",
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "default": 1 } },
+          { "in": "query", "name": "limit", "schema": { "type": "integer", "default": 6 } },
+          { "in": "query", "name": "nombre", "schema": { "type": "string" } },
+          { "in": "query", "name": "departamento", "schema": { "type": "string" } },
+          { "in": "query", "name": "circuito", "schema": { "type": "string" } }
+        ],
         "responses": {
           "200": {
             "description": "Lista de atractivos obtenida con éxito.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Atractivo"
+                  "type": "object",
+                  "properties": {
+                    "atractivos": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Atractivo" }
+                    },
+                    "paginacion": { "type": "object" }
                   }
                 }
               }
@@ -199,7 +210,13 @@
           },
           "circuito": {
             "type": "string",
-            "description": "ID del Circuito relacionado (Populate)"
+            "nullable": true,
+            "description": "ID opcional del circuito relacionado"
+          },
+          "actividades": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "IDs de actividades asociadas"
           },
           "youtubeUrl": {
             "type": "string",
@@ -217,7 +234,7 @@
           "nombre",
           "departamento",
           "descripcion",
-          "circuito"
+          "imagen"
         ],
         "properties": {
           "nombre": {
@@ -231,13 +248,24 @@
           },
           "circuito": {
             "type": "string",
-            "description": "ID del documento Circuito"
+            "nullable": true,
+            "description": "ID opcional del documento Circuito"
+          },
+          "imagen": {
+            "type": "object",
+            "required": ["url"],
+            "properties": {
+              "public_id": { "type": "string" },
+              "url": { "type": "string", "format": "uri" }
+            }
           },
           "youtubeUrl": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           },
           "googleMapsUrl": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           }
         }
       },
@@ -270,11 +298,15 @@
         "type": "object",
         "required": [
           "nombre",
+          "descripcion",
           "duracionEstimada",
           "atractivo"
         ],
         "properties": {
           "nombre": {
+            "type": "string"
+          },
+          "descripcion": {
             "type": "string"
           },
           "duracionEstimada": {
